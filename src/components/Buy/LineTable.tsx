@@ -1,20 +1,24 @@
-import React, { FC, SVGProps } from 'react';
+import { FC, SVGProps } from 'react';
 import dayjs from 'dayjs';
+// @ts-ignore
+import dayjsBusinessDays from 'dayjs-business-days';
 
 import { Buy as BuyType } from '@Types/dataApi';
 import { Buy } from '@Types/dataApi';
 import Button from '@Components/Template/button';
 import StockSellIcon from '@SVG/StockSell';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import axiosInstance from '@Local/utils/Axios';
 import refetchStore, { StateRefetch } from '@Local/context/Refetch';
+
+dayjs.extend(dayjsBusinessDays);
 
 const LineTable: FC<Buy> = ({
   _id,
   Symbol,
   Date_ExDiv,
   Date_Paiement,
-  Div_Annuel,
+  Dividende,
   Open,
   Stock_Price,
   Stock_Price_Date,
@@ -54,7 +58,7 @@ const LineTable: FC<Buy> = ({
       Symbol,
       Date_ExDiv,
       Date_Paiement,
-      Div_Annuel,
+      Dividende: Dividende,
       Open: !Open,
       Stock_Price,
       Stock_Price_Date,
@@ -84,6 +88,12 @@ const LineTable: FC<Buy> = ({
         </a>
       </td>
       <td>
+        {dayjs(Stock_Price_Date as string).format('DD/MM/YYYY') ===
+        'Invalid Date'
+          ? 'N/A'
+          : dayjs(Stock_Price_Date as string).format('DD/MM/YYYY')}
+      </td>
+      <td>
         {dayjs(Date_ExDiv as string).format('DD/MM/YYYY') === 'Invalid Date'
           ? 'N/A'
           : dayjs(Date_ExDiv as string).format('DD/MM/YYYY')}
@@ -94,16 +104,15 @@ const LineTable: FC<Buy> = ({
           : dayjs(Date_Paiement as string).format('DD/MM/YYYY')}
       </td>
       <td>
-        {dayjs(Stock_Price_Date as string).format('DD/MM/YYYY') ===
-        'Invalid Date'
-          ? 'N/A'
-          : dayjs(Stock_Price_Date as string).format('DD/MM/YYYY')}
+        {dayjs(Date_Paiement as string).format('DD/MM/YYYY') === 'Invalid Date'
+          ? 'N/A' // @ts-ignore
+          : dayjs(Date_ExDiv as string).businessDaysAdd(2).format('DD/MM/YYYY')}
       </td>
       <td className="rounded-r-lg">
         {dayjs(Stock_Price_Date as string).isBefore(dayjs(Date_ExDiv as string))
           ? `~ ${(
               ((Montant as number) / (Stock_Price as number)) *
-              (Div_Annuel as number) *
+              (Dividende as number) *
               0.7
             ).toFixed(2)} $`
           : 'N/A'}

@@ -19,11 +19,24 @@ import Button from '@Components/Template/button';
 import TradingUpIcon from '@SVG/TradingUp';
 import MoneyIcon from '@SVG/Money';
 import refetchStore, { StateRefetch } from '@Local/context/Refetch';
+import searchSymbolStore, {
+  StateSearchSymbol,
+} from '@Local/context/SearchSymbol';
+import searchExDivStore, { StateSearchExDiv } from '@Local/context/SearchExDiv';
+import searchAnnualDivStore, {
+  StateSearchAnnualDiv,
+} from '@Local/context/SearchAnnualDiv';
+import TrashIcon from '@SVG/Trash';
 
 const Dividende: FC = (): JSX.Element => {
   const BuyDividendeStore = buyDividendeStore(
-    (state: StateBuyDividende) => state,
-  );
+      (state: StateBuyDividende) => state,
+    ),
+    SearchSymbolStore = searchSymbolStore((state: StateSearchSymbol) => state),
+    SearchExDivStore = searchExDivStore((state: StateSearchExDiv) => state),
+    SearchAnnualDivStore = searchAnnualDivStore(
+      (state: StateSearchAnnualDiv) => state,
+    );
 
   var propsSvg: SVGProps<SVGSVGElement> = {
     className: 'w-5 h-5 fill-slate-200',
@@ -37,168 +50,71 @@ const Dividende: FC = (): JSX.Element => {
       onError: (err) => console.log(err),
     });
 
-    const [Search, setSearch] = useState<string>('');
-    const [Secteur, setSecteur] = useState<string>('');
-    const [DivAnnuel, setDivAnnuel] = useState<number>(0);
-    const [Sort, setSort] = useState<string>('');
-
-    const handleChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearch(e.target.value);
-    };
-
-    const handleChangeSecteur = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSecteur(e.target.value);
-    };
-
-    const handleChangeDivAnnuel = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setDivAnnuel(Number(e.target.value.replace(',', '.')));
-    };
-
-    const handleSort = (name: string) => {
-      if (Sort === name) setSort('');
-      else setSort(name);
-    };
-
     return (
-      <>
-        <div className="col-span-1 row-span-1 bg-slate-800 rounded-lg shadow-lg flex flex-col justify-center gap-y-2 py-4 px-2">
-          <p className="text-center text-2xl sm:text-3xl font-extrabold tracking-tight">
-            Dividend calendar
-          </p>
-          <div className="inline-flex w-full justify-center gap-x-3 px-4">
-            <Input
-              name="Search by symbol"
-              type="text"
-              callback={handleChangeSearch}
-              value={Search}
-            >
-              <SearchIcon {...propsSvg} />
-            </Input>
-
-            <Input
-              name="Search by secteur"
-              type="text"
-              callback={handleChangeSecteur}
-              value={Secteur}
-            >
-              <SearchIcon {...propsSvg} />
-            </Input>
-
-            <Input
-              name="Search by annual dividend"
-              type="number"
-              callback={handleChangeDivAnnuel}
-              value={DivAnnuel}
-            >
-              <SearchIcon {...propsSvg} />
-            </Input>
-          </div>
-        </div>
-
-        <div
-          className={
-            'col-span-1 bg-slate-800 rounded-lg shadow-lg py-4 px-2 ' +
-            (BuyDividendeStore.buy !== '' ? 'row-span-3' : 'row-span-5')
-          }
-        >
-          <div className="flex w-full h-full overflow-y-auto overflow-x-hidden col-span-1 row-span-1">
-            <table className="table-fixed w-full h-fit border-separate border-spacing-y-2">
-              <thead>
-                <tr className="">
-                  <th className="text-xl">Symbol</th>
-                  <th className="text-xl">Secteur</th>
-                  <th className="text-xl">
-                    <div>
-                      ExDiv
-                      <button
-                        className="mx-2"
-                        onClick={() => handleSort('Date_ExDiv')}
-                      >
-                        <ClockIcon {...propsSvg} />
-                      </button>
-                    </div>
-                  </th>
-                  <th className="text-xl">
-                    <div>
-                      Paiement
-                      <button
-                        className="mx-2"
-                        onClick={() => handleSort('Date_Paiement')}
-                      >
-                        <ClockIcon {...propsSvg} />
-                      </button>
-                    </div>
-                  </th>
-                  <th className="text-xl">Div Annuel</th>
-                  <th className="text-xl">Action</th>
-                </tr>
-              </thead>
-              <tbody className="rounded-xl ">
-                <Suspense fallback={<div>Loading...</div>}>
-                  {isSuccess && data.length > 0
-                    ? data
-                        .filter((dividende) =>
-                          Search !== ''
-                            ? dividende.Symbol.toLowerCase().includes(
-                                Search.toLowerCase(),
-                              )
-                            : true,
-                        )
-                        .filter((dividende) =>
-                          Sort !== ''
-                            ? dayjs(
-                                Object.values(dividende)[
-                                  Object.keys(dividende).indexOf(Sort)
-                                ],
-                              ).isAfter(dayjs())
-                            : true,
-                        )
-                        .filter((dividende) =>
-                          Secteur !== ''
-                            ? dividende.Secteur.toLowerCase().includes(
-                                Secteur.toLowerCase(),
-                              )
-                            : true,
-                        )
-                        .filter((dividende) =>
-                          DivAnnuel !== null
-                            ? dividende.Div_Annuel >= DivAnnuel
-                            : true,
-                        )
-                        .sort((a, b) => {
-                          if (
-                            dayjs(a.Date_ExDiv as string).isBefore(
-                              dayjs(b.Date_Paiement as string),
+      <div
+        className={
+          'col-span-1 bg-slate-800 rounded-lg shadow-lg py-4 px-2 ' +
+          (BuyDividendeStore.buy !== '' ? 'row-span-3' : 'row-span-5')
+        }
+      >
+        <div className="flex w-full h-full overflow-y-auto overflow-x-hidden col-span-1 row-span-1">
+          <table className="table-fixed w-full h-fit border-separate border-spacing-y-2">
+            <thead>
+              <tr className="">
+                <th className="text-xl">Symbol</th>
+                <th className="text-xl">Ex-Dividende</th>
+                <th className="text-xl">Paiement</th>
+                <th className="text-xl">Dividende</th>
+                <th className="text-xl">Action</th>
+              </tr>
+            </thead>
+            <tbody className="rounded-xl ">
+              <Suspense fallback={<div>Loading...</div>}>
+                {isSuccess && data.length > 0
+                  ? data
+                      .filter((dividende) =>
+                        SearchSymbolStore.val !== ''
+                          ? dividende.Symbol.toLowerCase().includes(
+                              SearchSymbolStore.val.toLowerCase(),
                             )
-                          ) {
-                            return 1;
+                          : !0,
+                      )
+                      .filter((dividende) =>
+                        SearchExDivStore.val !== ''
+                          ? dayjs(dividende.Date_ExDiv as string).format(
+                              'YYYY-MM-DD',
+                            ) === SearchExDivStore.val
+                          : !0,
+                      )
+                      .filter((dividende) =>
+                        SearchAnnualDivStore.val !== 0
+                          ? dividende.Dividende >= SearchAnnualDivStore.val
+                          : !0,
+                      )
+                      // sort by DivAnnuel and ExDiv
+                      .sort(
+                        (a, b) =>
+                          (a.Dividende as number) -
+                          (b.Dividende as number) +
+                          dayjs(a.Date_ExDiv as string).unix() -
+                          dayjs(b.Date_ExDiv as string).unix(),
+                      )
+                      .map((dividende) => (
+                        <DividendeCalendar
+                          key={
+                            dividende._id
+                              ? String(dividende._id)
+                              : String(Math.random() * 1000)
                           }
-                          if (
-                            dayjs(a.Date_ExDiv as string).isAfter(
-                              dayjs(b.Date_Paiement as string),
-                            )
-                          ) {
-                            return -1;
-                          }
-                          return 0;
-                        })
-                        .map((dividende) => (
-                          <DividendeCalendar
-                            key={
-                              dividende._id
-                                ? String(dividende._id)
-                                : String(Math.random() * 1000)
-                            }
-                            {...dividende}
-                          />
-                        ))
-                    : null}
-                </Suspense>
-              </tbody>
-            </table>
-          </div>
+                          {...dividende}
+                        />
+                      ))
+                  : null}
+              </Suspense>
+            </tbody>
+          </table>
         </div>
-      </>
+      </div>
     );
   };
 
@@ -239,7 +155,7 @@ const Dividende: FC = (): JSX.Element => {
         Symbol: (data as DividendeType[])[0].Symbol,
         Date_ExDiv: (data as DividendeType[])[0].Date_ExDiv,
         Date_Paiement: (data as DividendeType[])[0].Date_Paiement,
-        Div_Annuel: (data as DividendeType[])[0].Div_Annuel,
+        Dividende: (data as DividendeType[])[0].Dividende,
         Open: !0,
         Stock_Price: StockPrice,
         Stock_Price_Date: dayjs(StockPriceDate).format(),
@@ -280,7 +196,7 @@ const Dividende: FC = (): JSX.Element => {
                   {`${
                     data[0].Symbol
                   } is a stock that is currently dividende at ${
-                    data[0].Div_Annuel
+                    data[0].Dividende
                   }$ per share. ${
                     dayjs(StockPriceDate as string).isBefore(
                       dayjs(data[0].Date_ExDiv as string),
@@ -290,7 +206,7 @@ const Dividende: FC = (): JSX.Element => {
                             ? String(
                                 (
                                   (Montant / StockPrice) *
-                                  (data[0].Div_Annuel as number) *
+                                  (data[0].Dividende as number) *
                                   0.7
                                 ).toFixed(2),
                               )
@@ -348,6 +264,49 @@ const Dividende: FC = (): JSX.Element => {
   return (
     <div className="col-span-1 row-span-1">
       <div className="w-full h-full grid grid-cols-1 grid-rows-6 gap-2 ">
+        <div className="col-span-1 row-span-1 bg-slate-800 rounded-lg shadow-lg flex flex-col justify-center gap-y-2 py-4 px-2">
+          <p className="text-center text-2xl sm:text-3xl font-extrabold tracking-tight">
+            Dividend calendar
+          </p>
+          <div className="inline-flex w-full justify-center gap-x-3 px-4">
+            <Input
+              name="Search by symbol"
+              type="text"
+              callback={(e) => SearchSymbolStore.set(e.target.value)}
+              defaultValue={SearchSymbolStore.val}
+            >
+              <SearchIcon {...propsSvg} />
+            </Input>
+
+            <Input
+              name="Search by ex-dividende"
+              type="text"
+              callback={(e) => {
+                var value = e.target.value.split('/');
+                SearchExDivStore.set(`${value[2]}-${value[1]}-${value[0]}`);
+              }}
+              defaultValue={SearchExDivStore.val}
+            >
+              <SearchIcon {...propsSvg} />
+            </Input>
+
+            <Input
+              name="Search by dividend"
+              type="number"
+              callback={(e) => SearchAnnualDivStore.set(Number(e.target.value))}
+              defaultValue={SearchAnnualDivStore.val}
+            >
+              <SearchIcon {...propsSvg} />
+            </Input>
+            <Button callback={() => {
+              SearchSymbolStore.set('');
+              SearchExDivStore.set('');
+              SearchAnnualDivStore.set(0);
+            }}>
+              <TrashIcon {...propsSvg} />
+            </Button>
+          </div>
+        </div>
         <HeaderDividendeList />
 
         {BuyDividendeStore.buy !== '' && <BuyStock />}

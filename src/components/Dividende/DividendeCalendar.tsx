@@ -1,20 +1,18 @@
 import { Dividende } from '@Types/dataApi';
-import React, { FC, SVGProps } from 'react';
+import { FC, SVGProps } from 'react';
 import dayjs from 'dayjs';
 import buyDividendeStore, {
   StateBuyDividende,
 } from '@Local/context/BuyDividende';
-import LinkIcon from '@SVG/Link';
 import Button from '@Components/Template/button';
 import StockBuyIcon from '@SVG/StockBuy';
 
 const DividendeCalendar: FC<Dividende> = ({
   _id,
   Symbol,
-  Secteur,
   Date_ExDiv,
   Date_Paiement,
-  Div_Annuel,
+  Dividende,
 }: Dividende): JSX.Element => {
   const BuyDividendeStore = buyDividendeStore(
     (state: StateBuyDividende) => state,
@@ -36,9 +34,6 @@ const DividendeCalendar: FC<Dividende> = ({
         </a>
       </td>
       <td>
-        <p>{Secteur}</p>
-      </td>
-      <td>
         {dayjs(Date_ExDiv as string).format('DD/MM/YYYY') === 'Invalid Date'
           ? 'N/A'
           : dayjs(Date_ExDiv as string).format('DD/MM/YYYY')}
@@ -48,7 +43,7 @@ const DividendeCalendar: FC<Dividende> = ({
           ? 'N/A'
           : dayjs(Date_Paiement as string).format('DD/MM/YYYY')}
       </td>
-      <td className="slashed-zero lining-nums tabular-nums">{`${Div_Annuel} $`}</td>
+      <td className="slashed-zero lining-nums tabular-nums">{`${Dividende} $`}</td>
       <td className="rounded-r-lg">
         <Button
           callback={() => BuyDividendeStore.set(_id ? _id.toString() : '')}

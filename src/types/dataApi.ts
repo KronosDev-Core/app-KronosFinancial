@@ -1,10 +1,9 @@
 export interface Dividende extends Object {
   _id: String;
   Symbol: String;
-  Secteur: String;
   Date_ExDiv: String;
   Date_Paiement: String;
-  Div_Annuel: Number;
+  Dividende: Number;
 }
 
 export interface Buy extends Object {
@@ -12,7 +11,7 @@ export interface Buy extends Object {
   Symbol: String;
   Date_ExDiv: String;
   Date_Paiement: String;
-  Div_Annuel: Number;
+  Dividende: Number;
   Open: Boolean;
   Stock_Price: Number;
   Stock_Price_Date: String;
@@ -23,7 +22,7 @@ export interface CreateBuy extends Object {
   Symbol: String;
   Date_ExDiv: String;
   Date_Paiement: String;
-  Div_Annuel: Number;
+  Dividende: Number;
   Open: Boolean;
   Stock_Price: Number;
   Stock_Price_Date: String;

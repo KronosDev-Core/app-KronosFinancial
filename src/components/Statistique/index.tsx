@@ -39,7 +39,7 @@ const Statistique: FC = (): JSX.Element => {
         meanGainIdx += 1;
         meanGain +=
           ((buy.Montant as number) / (buy.Stock_Price as number)) *
-          (buy.Div_Annuel as number) *
+          (buy.Dividende as number) *
           0.7;
 
         nextEndStock = (data as BuyType[])
@@ -70,14 +70,14 @@ const Statistique: FC = (): JSX.Element => {
           if (dayjs(buy.Date_Paiement as string).isBefore(dayjs())) {
             MonthGain +=
               ((buy.Montant as number) / (buy.Stock_Price as number)) *
-              (buy.Div_Annuel as number) *
+              (buy.Dividende as number) *
               0.7;
           }
 
           if (dayjs(buy.Date_Paiement as string).isAfter(dayjs())) {
             MonthGainRestant +=
               ((buy.Montant as number) / (buy.Stock_Price as number)) *
-              (buy.Div_Annuel as number) *
+              (buy.Dividende as number) *
               0.7;
           }
         }
@@ -96,7 +96,7 @@ const Statistique: FC = (): JSX.Element => {
         ) {
           Total +=
             ((buy.Montant as number) / (buy.Stock_Price as number)) *
-            (buy.Div_Annuel as number) *
+            (buy.Dividende as number) *
             0.7;
         }
       });
