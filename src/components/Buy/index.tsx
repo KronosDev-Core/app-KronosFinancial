@@ -1,11 +1,11 @@
 import { FC, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import dayjs from 'dayjs';
 
 import { Buy as BuyType } from '@Types/dataApi';
 import LineTable from './LineTable';
 import axiosInstance from '@Local/utils/Axios';
 import refetchStore, { StateRefetch } from '@Local/context/Refetch';
+import DayJs from '@Local/utils/DayJs';
 
 const Buy: FC = (): JSX.Element => {
   const RefetchStore = refetchStore((state: StateRefetch) => state.set);
@@ -43,8 +43,8 @@ const Buy: FC = (): JSX.Element => {
                     ? data
                         .sort((a, _b) => (a.Open ? -1 : 1))
                         .sort((a, b) =>
-                          dayjs(a.Stock_Price_Date as string).isAfter(
-                            dayjs(b.Stock_Price_Date as string),
+                          DayJs(a.Stock_Price_Date).isAfter(
+                            DayJs(b.Stock_Price_Date),
                           )
                             ? 1
                             : -1,

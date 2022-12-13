@@ -1,7 +1,4 @@
 import { FC, SVGProps } from 'react';
-import dayjs from 'dayjs';
-// @ts-ignore
-import dayjsBusinessDays from 'dayjs-business-days';
 
 import { Buy as BuyType } from '@Types/dataApi';
 import { Buy } from '@Types/dataApi';
@@ -10,8 +7,7 @@ import StockSellIcon from '@SVG/StockSell';
 import { useMutation } from '@tanstack/react-query';
 import axiosInstance from '@Local/utils/Axios';
 import refetchStore, { StateRefetch } from '@Local/context/Refetch';
-
-dayjs.extend(dayjsBusinessDays);
+import DayJs from '@Local/utils/DayJs';
 
 const LineTable: FC<Buy> = ({
   _id,
@@ -66,6 +62,10 @@ const LineTable: FC<Buy> = ({
     });
   };
 
+  const DayJs_Date_ExDiv = DayJs(Date_ExDiv),
+    DayJs_Date_Paiement = DayJs(Date_Paiement),
+    DayJs_Stock_Price_Date = DayJs(Stock_Price_Date);
+
   return (
     <tr className="text-center text-xl h-[5rem] hover:bg-slate-900 rounded-lg transition-all easy-in-out duration-300">
       <td className="rounded-l-lg">
@@ -88,39 +88,36 @@ const LineTable: FC<Buy> = ({
         </a>
       </td>
       <td>
-        {dayjs(Stock_Price_Date as string).format('DD/MM/YYYY') ===
-        'Invalid Date'
+        {DayJs_Stock_Price_Date.format('DD/MM/YYYY') === 'Invalid Date'
           ? 'N/A'
-          : dayjs(Stock_Price_Date as string).format('DD/MM/YYYY')}
+          : DayJs_Stock_Price_Date.format('DD/MM/YYYY')}
       </td>
       <td>
-        {dayjs(Date_ExDiv as string) // @ts-ignore
-          .businessDaysSubtract(1)
-          .format('DD/MM/YYYY') === 'Invalid Date'
-          ? 'N/A'
-          : dayjs(Date_ExDiv as string) // @ts-ignore
-              .businessDaysSubtract(1)
-              .format('DD/MM/YYYY')}
+        {
+          // @ts-ignore
+          DayJs_Date_ExDiv.businessDaysSubtract(1).format('DD/MM/YYYY') ===
+          'Invalid Date'
+            ? 'N/A' // @ts-ignore
+            : DayJs_Date_ExDiv.businessDaysSubtract(1).format('DD/MM/YYYY')
+        }
       </td>
       <td>
-        {dayjs(Date_ExDiv as string).format('DD/MM/YYYY') === 'Invalid Date'
+        {DayJs_Date_ExDiv.format('DD/MM/YYYY') === 'Invalid Date'
           ? 'N/A'
-          : dayjs(Date_ExDiv as string).format('DD/MM/YYYY')}
+          : DayJs_Date_ExDiv.format('DD/MM/YYYY')}
       </td>
       <td>
-        {dayjs(Date_Paiement as string).format('DD/MM/YYYY') === 'Invalid Date'
+        {DayJs_Date_Paiement.format('DD/MM/YYYY') === 'Invalid Date'
           ? 'N/A'
-          : dayjs(Date_Paiement as string).format('DD/MM/YYYY')}
+          : DayJs_Date_Paiement.format('DD/MM/YYYY')}
       </td>
       <td>
-        {dayjs(Date_Paiement as string).format('DD/MM/YYYY') === 'Invalid Date'
-          ? 'N/A'
-          : dayjs(Date_ExDiv as string) // @ts-ignore
-              .businessDaysAdd(1)
-              .format('DD/MM/YYYY')}
+        {DayJs_Date_ExDiv.format('DD/MM/YYYY') === 'Invalid Date'
+          ? 'N/A' // @ts-ignore
+          : DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')}
       </td>
       <td className="rounded-r-lg">
-        {dayjs(Stock_Price_Date as string).isBefore(dayjs(Date_ExDiv as string))
+        {DayJs_Stock_Price_Date.isBefore(DayJs_Date_ExDiv)
           ? `~ ${(
               ((Montant as number) / (Stock_Price as number)) *
               (Dividende as number) *
