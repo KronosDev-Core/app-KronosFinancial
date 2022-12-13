@@ -164,7 +164,7 @@ const Statistique: FC = (): JSX.Element => {
           {/* Next date end invest dividende (DateExDiv+3Day) */}
           <p className="text-4xl">
             {isSuccess // @ts-ignore
-              ? dayjs(nextEndStock).businessDaysAdd(2).format('DD/MM/YYYY')
+              ? dayjs(nextEndStock).businessDaysAdd(1).format('DD/MM/YYYY')
               : ''}
           </p>
           <ClockIcon {...propsSvg} />

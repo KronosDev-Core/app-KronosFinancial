@@ -29,6 +29,7 @@ const Buy: FC = (): JSX.Element => {
                   <th className="text-xl">Open</th>
                   <th className="text-xl">Symbol</th>
                   <th className="text-xl">Buy</th>
+                  <th className="text-xl">Start</th>
                   <th className="text-xl">Ex-Dividende</th>
                   <th className="text-xl">Paiement</th>
                   <th className="text-xl">End</th>

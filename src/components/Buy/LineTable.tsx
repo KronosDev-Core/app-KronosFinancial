@@ -94,6 +94,15 @@ const LineTable: FC<Buy> = ({
           : dayjs(Stock_Price_Date as string).format('DD/MM/YYYY')}
       </td>
       <td>
+        {dayjs(Date_ExDiv as string) // @ts-ignore
+          .businessDaysSubtract(1)
+          .format('DD/MM/YYYY') === 'Invalid Date'
+          ? 'N/A'
+          : dayjs(Date_ExDiv as string) // @ts-ignore
+              .businessDaysSubtract(1)
+              .format('DD/MM/YYYY')}
+      </td>
+      <td>
         {dayjs(Date_ExDiv as string).format('DD/MM/YYYY') === 'Invalid Date'
           ? 'N/A'
           : dayjs(Date_ExDiv as string).format('DD/MM/YYYY')}
@@ -105,8 +114,10 @@ const LineTable: FC<Buy> = ({
       </td>
       <td>
         {dayjs(Date_Paiement as string).format('DD/MM/YYYY') === 'Invalid Date'
-          ? 'N/A' // @ts-ignore
-          : dayjs(Date_ExDiv as string).businessDaysAdd(2).format('DD/MM/YYYY')}
+          ? 'N/A'
+          : dayjs(Date_ExDiv as string) // @ts-ignore
+              .businessDaysAdd(1)
+              .format('DD/MM/YYYY')}
       </td>
       <td className="rounded-r-lg">
         {dayjs(Stock_Price_Date as string).isBefore(dayjs(Date_ExDiv as string))

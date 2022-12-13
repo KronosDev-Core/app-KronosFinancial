@@ -1,6 +1,10 @@
 import { FC, Suspense, SVGProps, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
+// @ts-ignore
+import dayjsBusinessDays from 'dayjs-business-days';
+
+dayjs.extend(dayjsBusinessDays);
 
 import {
   Dividende as DividendeType,
@@ -11,7 +15,6 @@ import DividendeCalendar from '@Components/Dividende/DividendeCalendar';
 import axiosInstance from '@Local/utils/Axios';
 import Input from '@Components/Template/input';
 import SearchIcon from '@SVG/Search';
-import ClockIcon from '@SVG/Clock';
 import buyDividendeStore, {
   StateBuyDividende,
 } from '@Local/context/BuyDividende';
@@ -143,7 +146,6 @@ const Dividende: FC = (): JSX.Element => {
     });
 
     const [StockPrice, setStockPrice] = useState(0);
-    const [StockPriceDate, setStockPriceDate] = useState('');
     const [Montant, setMontant] = useState(0);
 
     const handleCancel = () => {
@@ -158,7 +160,11 @@ const Dividende: FC = (): JSX.Element => {
         Dividende: (data as DividendeType[])[0].Dividende,
         Open: !0,
         Stock_Price: StockPrice,
-        Stock_Price_Date: dayjs(StockPriceDate).format(),
+        Stock_Price_Date: dayjs(
+          (data as DividendeType[])[0].Date_ExDiv as string,
+        ) // @ts-ignore
+          .businessDaysSubtract(1)
+          .format(),
         Montant: Montant,
       };
 
@@ -176,13 +182,6 @@ const Dividende: FC = (): JSX.Element => {
       setMontant(Number(e.target.value));
     };
 
-    const handleChangeStockPriceDate = (
-      e: React.ChangeEvent<HTMLInputElement>,
-    ) => {
-      var value = e.target.value.split('/');
-      setStockPriceDate(`${value[2]}-${value[1]}-${value[0]}`);
-    };
-
     return (
       <div className="col-span-1 row-span-2 bg-slate-800 rounded-lg shadow-lg py-4 px-2">
         <Suspense fallback={<div>Loading...</div>}>
@@ -198,10 +197,10 @@ const Dividende: FC = (): JSX.Element => {
                   } is a stock that is currently dividende at ${
                     data[0].Dividende
                   }$ per share. ${
-                    dayjs(StockPriceDate as string).isBefore(
-                      dayjs(data[0].Date_ExDiv as string),
-                    )
-                      ? `If you buy for 100$ you will get ${
+                    dayjs(data[0].Date_ExDiv as string) // @ts-ignore
+                      .businessDaysSubtract(1)
+                      .isBefore(dayjs(data[0].Date_ExDiv as string))
+                      ? `If you buy for ${Montant}$ you will get ${
                           StockPrice
                             ? String(
                                 (
@@ -225,7 +224,7 @@ const Dividende: FC = (): JSX.Element => {
                 </p>
               </div>
 
-              <div className="inline-flex w-full justify-center gap-x-3 px-4">
+              <div className="inline-flex w-3/4 mx-auto justify-center gap-x-3 px-4">
                 <Input
                   type="number"
                   name="Stock Price"
@@ -239,14 +238,6 @@ const Dividende: FC = (): JSX.Element => {
                   callback={handleChangeMontant}
                 >
                   <MoneyIcon {...propsSvg} />
-                </Input>
-                <Input
-                  type="text"
-                  name="Date d'achat"
-                  callback={handleChangeStockPriceDate}
-                  defaultValue={StockPriceDate}
-                >
-                  <ClockIcon {...propsSvg} />
                 </Input>
               </div>
 
@@ -298,11 +289,13 @@ const Dividende: FC = (): JSX.Element => {
             >
               <SearchIcon {...propsSvg} />
             </Input>
-            <Button callback={() => {
-              SearchSymbolStore.set('');
-              SearchExDivStore.set('');
-              SearchAnnualDivStore.set(0);
-            }}>
+            <Button
+              callback={() => {
+                SearchSymbolStore.set('');
+                SearchExDivStore.set('');
+                SearchAnnualDivStore.set(0);
+              }}
+            >
               <TrashIcon {...propsSvg} />
             </Button>
           </div>
