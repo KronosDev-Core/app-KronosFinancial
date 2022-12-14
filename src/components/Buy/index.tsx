@@ -23,7 +23,7 @@ const Buy: FC = (): JSX.Element => {
       <div className="grid grid-cols-1 grid-rows-1 h-full overflow-auto gap-2">
         <div className="grid grid-cols-1 grid-rows-1 w-full h-full col-span-1 row-span-2 py-4 px-2 rounded-lg shadow-lg bg-slate-800">
           <div className="flex w-full h-full overflow-y-auto overflow-x-hidden col-span-1 row-span-1">
-            <table className="table-fixed w-full h-fit border-separate border-spacing-y-2">
+            <table className="table-auto w-full h-fit border-separate border-spacing-y-2">
               <thead>
                 <tr>
                   <th className="text-xl">Status</th>

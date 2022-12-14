@@ -57,7 +57,7 @@ const Dividende: FC = (): JSX.Element => {
         }
       >
         <div className="flex w-full h-full overflow-y-auto overflow-x-hidden col-span-1 row-span-1">
-          <table className="table-fixed w-full h-fit border-separate border-spacing-y-2">
+          <table className="table-auto w-full h-fit border-separate border-spacing-y-2">
             <thead>
               <tr className="">
                 <th className="text-xl">Status</th>
