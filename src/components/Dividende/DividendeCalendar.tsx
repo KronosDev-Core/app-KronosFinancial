@@ -7,9 +7,12 @@ import buyDividendeStore, {
 } from '@Local/context/BuyDividende';
 import Button from '@Components/Template/button';
 import StockBuyIcon from '@SVG/StockBuy';
+import AddIcon from '@SVG/Add';
+import UpdateIcon from '@SVG/Update';
 
 const DividendeCalendar: FC<Dividende> = ({
   _id,
+  Status,
   Symbol,
   Date_ExDiv,
   Date_Paiement,
@@ -20,7 +23,7 @@ const DividendeCalendar: FC<Dividende> = ({
   );
 
   var propsSvg: SVGProps<SVGSVGElement> = {
-    className: 'h-6 w-6 fill-slate-200',
+    className: 'h-8 w-8 fill-slate-200  mx-auto',
   };
 
   const DayJs_Exdiv = DayJs(Date_ExDiv).format('DD/MM/YYYY'),
@@ -29,6 +32,15 @@ const DividendeCalendar: FC<Dividende> = ({
   return (
     <tr className="text-center text-xl h-[5rem] hover:bg-slate-900 rounded-lg transition-all easy-in-out duration-300">
       <td className="rounded-l-lg">
+        {
+          Status === "New"
+            ? <AddIcon {...propsSvg} />
+            : Status === "Update"
+              ? <UpdateIcon {...propsSvg} />
+              : null
+        }
+      </td>
+      <td>
         <a
           href={`https://www.etoro.com/fr/markets/${Symbol}`}
           target="_blank"

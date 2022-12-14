@@ -1,6 +1,6 @@
 import { FC, SVGProps } from 'react';
 
-import { Buy as BuyType } from '@Types/dataApi';
+import { Buy as BuyType, UpdateBuy } from '@Types/dataApi';
 import { Buy } from '@Types/dataApi';
 import Button from '@Components/Template/button';
 import StockSellIcon from '@SVG/StockSell';
@@ -8,8 +8,15 @@ import { useMutation } from '@tanstack/react-query';
 import axiosInstance from '@Local/utils/Axios';
 import refetchStore, { StateRefetch } from '@Local/context/Refetch';
 import DayJs from '@Local/utils/DayJs';
+import AddIcon from '@SVG/Add';
+import UpdateIcon from '@SVG/Update';
 
-const LineTable: FC<Buy> = ({
+interface Props extends Buy {
+  index: number;
+  lastIndex: number;
+}
+
+const LineTable: FC<Props> = ({
   _id,
   Symbol,
   Date_ExDiv,
@@ -19,11 +26,15 @@ const LineTable: FC<Buy> = ({
   Stock_Price,
   Stock_Price_Date,
   Montant,
+  Status,
+  index,
+  lastIndex,
 }): JSX.Element => {
   const RefetchStore = refetchStore((state: StateRefetch) => state.fn);
+  lastIndex += 1;
 
   var propsSvg: SVGProps<SVGSVGElement> = {
-    className: 'h-6 w-6 fill-slate-200',
+    className: 'h-8 w-8 fill-slate-200 mx-auto',
   };
 
   const DeleteBuy = useMutation({
@@ -37,7 +48,7 @@ const LineTable: FC<Buy> = ({
 
   const UpdateBuy = useMutation({
     mutationKey: ['updateBuy'],
-    mutationFn: (data: BuyType): Promise<BuyType> =>
+    mutationFn: (data: UpdateBuy): Promise<UpdateBuy> =>
       axiosInstance.put(`/buy/${data._id}`, data).then((res) => res.data),
     onSuccess: () => {
       RefetchStore();
@@ -51,14 +62,7 @@ const LineTable: FC<Buy> = ({
   const handleUpdate = () => {
     UpdateBuy.mutate({
       _id,
-      Symbol,
-      Date_ExDiv,
-      Date_Paiement,
-      Dividende: Dividende,
       Open: !Open,
-      Stock_Price,
-      Stock_Price_Date,
-      Montant,
     });
   };
 
@@ -69,6 +73,13 @@ const LineTable: FC<Buy> = ({
   return (
     <tr className="text-center text-xl h-[5rem] hover:bg-slate-900 rounded-lg transition-all easy-in-out duration-300">
       <td className="rounded-l-lg">
+        {Status === 'New' ? (
+          <AddIcon {...propsSvg} />
+        ) : Status === 'Update' ? (
+          <UpdateIcon {...propsSvg} />
+        ) : null}
+      </td>
+      <td>
         <Button callback={handleUpdate}>
           <div
             className={
@@ -77,6 +88,130 @@ const LineTable: FC<Buy> = ({
             }
           />
         </Button>
+      </td>
+      <td>
+        <div className="w-full h-full grid grid-cols-4 grid-rows-1 -my-2">
+          <div className="w-full h-full grid grid-cols-1 grid-rows-3 gap-y-3 px-2">
+            {
+              // End
+              ((index + 1) / 2) % 2 === 1 && index + 1 !== 2 ? (
+                <>
+                  <div className="w-1 h-full bg-blue-500 rounded-t-lg row-span-1" />
+                  <div className="w-full h-full row-span-1 border-0 border-l-4 border-b-4 border-blue-500 rounded-bl-lg" />
+                </>
+              ) : null
+            }
+            {
+              // Middle
+              ((index + 1) / 2) % 2 === 0.5 && index + 1 !== 1 ? (
+                <>
+                  <div className="w-1 h-full bg-blue-500 rounded-lg row-span-1" />
+                  <div className="w-1 h-full bg-blue-500 rounded-lg row-span-1" />
+                  <div className="w-1 h-full bg-blue-500 rounded-lg row-span-1" />
+                </>
+              ) : null
+            }
+            {
+              // Start
+              ((index + 1) / 2) % 2 === 0 ? (
+                <>
+                  <div className="w-full h-full row-span-1 row-start-2 border-0 border-l-4 border-t-4 border-blue-500 rounded-tl-lg" />
+                  <div className="w-1 h-full bg-blue-500 rounded-b-lg row-span-1 row-start-3" />
+                </>
+              ) : null
+            }
+          </div>
+          <div className="w-full h-full grid grid-cols-1 grid-rows-3 gap-y-3 px-2">
+            {
+              // End
+              ((index + 1) / 2) % 2 === 0.5 && index + 1 !== 1 ? (
+                <>
+                  <div className="w-1 h-full bg-green-500 rounded-t-lg row-span-1" />
+                  <div className="w-full h-full row-span-1 border-0 border-l-4 border-b-4 border-green-500 rounded-bl-lg" />
+                </>
+              ) : null
+            }
+            {
+              // Middle
+              ((index + 1) / 2) % 2 === 0 ? (
+                <>
+                  <div className="w-1 h-full bg-green-500 rounded-lg row-span-1" />
+                  <div className="w-1 h-full bg-green-500 rounded-lg row-span-1" />
+                  <div className="w-1 h-full bg-green-500 rounded-lg row-span-1" />
+                </>
+              ) : null
+            }
+            {
+              // Start
+              ((index + 1) / 2) % 2 === 1.5 ? (
+                <>
+                  <div className="w-full h-full row-span-1 row-start-2 border-0 border-l-4 border-t-4 border-green-500 rounded-tl-lg" />
+                  <div className="w-1 h-full bg-green-500 rounded-b-lg row-span-1 row-start-3" />
+                </>
+              ) : null
+            }
+          </div>
+          <div className="w-full h-full grid grid-cols-1 grid-rows-3 gap-y-3 px-2">
+            {
+              // End
+              ((index + 1) / 2) % 2 === 0 ? (
+                <>
+                  <div className="w-1 h-full bg-blue-500 rounded-t-lg row-span-1" />
+                  <div className="w-full h-full row-span-1 border-0 border-l-4 border-b-4 border-blue-500 rounded-bl-lg" />
+                </>
+              ) : null
+            }
+            {
+              // Middle
+              ((index + 1) / 2) % 2 === 1.5 ? (
+                <>
+                  <div className="w-1 h-full bg-blue-500 rounded-lg row-span-1" />
+                  <div className="w-1 h-full bg-blue-500 rounded-lg row-span-1" />
+                  <div className="w-1 h-full bg-blue-500 rounded-lg row-span-1" />
+                </>
+              ) : null
+            }
+            {
+              // Start
+              ((index + 1) / 2) % 2 === 1 ? (
+                <>
+                  <div className="w-full h-full row-span-1 row-start-2 border-0 border-l-4 border-t-4 border-blue-500 rounded-tl-lg" />
+                  <div className="w-1 h-full bg-blue-500 rounded-b-lg row-span-1 row-start-3" />
+                </>
+              ) : null
+            }
+          </div>
+          <div className="w-full h-full grid grid-cols-1 grid-rows-3 gap-y-2 px-2">
+            {
+              // End
+              ((index + 1) / 2) % 2 === 1.5 && index + 1 !== 1 ? (
+                <>
+                  <div className="w-1 h-full bg-green-500 rounded-t-lg row-span-1" />
+                  <div className="w-full h-full row-span-1 border-0 border-l-4 border-b-4 border-green-500 rounded-bl-lg" />
+                </>
+              ) : null
+            }
+            {
+              // Middle
+              ((index + 1) / 2) % 2 === 1 ? (
+                <>
+                  <div className="w-1 h-full bg-green-500 rounded-lg row-span-1" />
+                  <div className="w-1 h-full bg-green-500 rounded-lg row-span-1" />
+                  <div className="w-1 h-full bg-green-500 rounded-lg row-span-1" />
+                </>
+              ) : null
+            }
+            {
+              // Start
+              ((index + 1) / 2) % 2 === 0.5 ? (
+                <>
+                  <div className="w-full h-full row-span-1 row-start-2 border-0 border-l-4 border-t-4 border-green-500 rounded-tl-lg" />
+                  <div className="w-1 h-full bg-green-500 rounded-b-lg row-span-1 row-start-3" />
+                </>
+              ) : null
+            }
+          </div>
+        </div>
       </td>
       <td>
         <a
@@ -116,7 +251,7 @@ const LineTable: FC<Buy> = ({
           ? 'N/A' // @ts-ignore
           : DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')}
       </td>
-      <td className="rounded-r-lg">
+      <td>
         {DayJs_Stock_Price_Date.isBefore(DayJs_Date_ExDiv)
           ? `~ ${(
               ((Montant as number) / (Stock_Price as number)) *
@@ -125,7 +260,7 @@ const LineTable: FC<Buy> = ({
             ).toFixed(2)} $`
           : 'N/A'}
       </td>
-      <td>
+      <td className="rounded-r-lg">
         <Button callback={handleSell}>
           <StockSellIcon {...propsSvg} />
         </Button>

@@ -25,8 +25,10 @@ const Buy: FC = (): JSX.Element => {
           <div className="flex w-full h-full overflow-y-auto overflow-x-hidden col-span-1 row-span-1">
             <table className="table-fixed w-full h-fit border-separate border-spacing-y-2">
               <thead>
-                <tr className="">
+                <tr>
+                  <th className="text-xl">Status</th>
                   <th className="text-xl">Open</th>
+                  <th className="text-xl">Peer</th>
                   <th className="text-xl">Symbol</th>
                   <th className="text-xl">Buy</th>
                   <th className="text-xl">Start</th>
@@ -49,13 +51,15 @@ const Buy: FC = (): JSX.Element => {
                             ? 1
                             : -1,
                         )
-                        .map((buy) => (
+                        .map((buy, idx) => (
                           <LineTable
                             key={
                               buy._id
                                 ? String(buy._id)
                                 : String(Math.random() * 1000)
                             }
+                            index={idx}
+                            lastIndex={data.length - 1}
                             {...buy}
                           />
                         ))

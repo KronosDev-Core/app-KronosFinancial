@@ -60,6 +60,7 @@ const Dividende: FC = (): JSX.Element => {
           <table className="table-fixed w-full h-fit border-separate border-spacing-y-2">
             <thead>
               <tr className="">
+                <th className="text-xl">Status</th>
                 <th className="text-xl">Symbol</th>
                 <th className="text-xl">Ex-Dividende</th>
                 <th className="text-xl">Paiement</th>
@@ -149,10 +150,7 @@ const Dividende: FC = (): JSX.Element => {
 
     const handleBuyDividende = () => {
       var dataForm: CreateBuyType = {
-        Symbol: (data as DividendeType[])[0].Symbol,
-        Date_ExDiv: (data as DividendeType[])[0].Date_ExDiv,
-        Date_Paiement: (data as DividendeType[])[0].Date_Paiement,
-        Dividende: (data as DividendeType[])[0].Dividende,
+        IdStockDividende: (data as DividendeType[])[0]._id,
         Open: !0,
         Stock_Price: StockPrice,
         Stock_Price_Date: DayJs((data as DividendeType[])[0].Date_ExDiv) // @ts-ignore
