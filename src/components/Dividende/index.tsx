@@ -2,13 +2,7 @@ import { FC, Suspense, SVGProps, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
 import DayJs from '@Local/utils/DayJs';
-import {
-  Dividende as DividendeType,
-  Buy as BuyType,
-  CreateBuy as CreateBuyType,
-} from '@Types/dataApi';
 import DividendeCalendar from '@Components/Dividende/DividendeCalendar';
-import axiosInstance from '@Local/utils/Axios';
 import Input from '@Components/Template/input';
 import SearchIcon from '@SVG/Search';
 import buyDividendeStore, {
@@ -26,6 +20,9 @@ import searchAnnualDivStore, {
   StateSearchAnnualDiv,
 } from '@Local/context/SearchAnnualDiv';
 import TrashIcon from '@SVG/Trash';
+import { getAllDividendes, getOneDividende } from '@Local/api/dividende';
+import { BuyCreate, Dividende as DividendeType } from '@Types/index';
+import { createBuy } from '@Local/api/buy';
 
 const Dividende: FC = (): JSX.Element => {
   const BuyDividendeStore = buyDividendeStore(
@@ -44,8 +41,7 @@ const Dividende: FC = (): JSX.Element => {
   const HeaderDividendeList: FC = (): JSX.Element => {
     const { data, isSuccess } = useQuery<DividendeType[]>({
       queryKey: ['dividendes'],
-      queryFn: (): Promise<DividendeType[]> =>
-        axiosInstance.get('/dividendes').then((res) => res.data),
+      queryFn: getAllDividendes,
       onError: (err) => console.log(err),
     });
 
@@ -73,30 +69,41 @@ const Dividende: FC = (): JSX.Element => {
                 {isSuccess && data.length > 0
                   ? data
                       .filter((dividende) =>
+                        SearchAnnualDivStore.val === 0 &&
+                        SearchExDivStore.val === '' &&
+                        SearchSymbolStore.val === ''
+                          ? DayJs(dividende.dateExDividende).isAfter(DayJs()) ||
+                            DayJs(dividende.dateExDividende).isSame(DayJs())
+                          : !0,
+                      )
+                      .filter((dividende) =>
                         SearchSymbolStore.val !== ''
-                          ? dividende.Symbol.toLowerCase().includes(
-                              SearchSymbolStore.val.toLowerCase(),
-                            )
+                          ? dividende.stockSymbol
+                              .toLowerCase()
+                              .includes(SearchSymbolStore.val.toLowerCase())
                           : !0,
                       )
                       .filter((dividende) =>
                         SearchExDivStore.val !== ''
-                          ? DayJs(dividende.Date_ExDiv).format('YYYY-MM-DD') ===
+                          ? DayJs(dividende.dateExDividende).format(
+                              'YYYY-MM-DD',
+                            ) ===
                             DayJs(SearchExDivStore.val).format('YYYY-MM-DD')
                           : !0,
                       )
                       .filter((dividende) =>
                         SearchAnnualDivStore.val !== 0
-                          ? dividende.Dividende >= SearchAnnualDivStore.val
+                          ? dividende.dividendePerShare >=
+                            SearchAnnualDivStore.val
                           : !0,
                       )
                       // sort by DivAnnuel and ExDiv
                       .sort(
                         (a, b) =>
-                          (a.Dividende as number) -
-                          (b.Dividende as number) +
-                          DayJs(a.Date_ExDiv).unix() -
-                          DayJs(b.Date_ExDiv).unix(),
+                          (a.dividendePerShare as number) -
+                          (b.dividendePerShare as number) +
+                          DayJs(a.dateExDividende).unix() -
+                          DayJs(b.dateExDividende).unix(),
                       )
                       .map((dividende) => (
                         <DividendeCalendar
@@ -123,44 +130,38 @@ const Dividende: FC = (): JSX.Element => {
     );
     const RefetchStore = refetchStore((state: StateRefetch) => state.fn);
 
-    const { data, isSuccess } = useQuery<DividendeType[]>({
-      queryKey: ['dividende', BuyDividendeStore.buy],
-      queryFn: (): Promise<DividendeType[]> =>
-        axiosInstance
-          .get(`/dividende/${BuyDividendeStore.buy}`)
-          .then((res) => res.data),
+    const { data, isSuccess } = useQuery<DividendeType>({
+      queryKey: ['Dividende', BuyDividendeStore.buy],
+      queryFn: ({ queryKey }) => getOneDividende(queryKey[1] as string),
       onError: (err) => console.log(err),
     });
 
-    const createBuy = useMutation({
+    const createBuyMutation = useMutation({
       mutationKey: ['createBuy'],
-      mutationFn: (data: CreateBuyType): Promise<BuyType> =>
-        axiosInstance.post(`/buys`, data).then((res) => res.data),
+      mutationFn: createBuy,
       onSuccess: () => {
         RefetchStore();
       },
     });
 
-    const [StockPrice, setStockPrice] = useState(0);
-    const [Montant, setMontant] = useState(0);
+    const [StockPrice, setStockPrice] = useState<number>(
+      isSuccess ? (data.stock.price as number) : 0,
+    );
+    const [Montant, setMontant] = useState<number>(0);
 
     const handleCancel = () => {
       BuyDividendeStore.set('');
     };
 
     const handleBuyDividende = () => {
-      var dataForm: CreateBuyType = {
-        IdStockDividende: (data as DividendeType[])[0]._id,
-        Open: !0,
-        Stock_Price: StockPrice,
-        Stock_Price_Date: DayJs((data as DividendeType[])[0].Date_ExDiv) // @ts-ignore
-          .businessDaysSubtract(1)
-          .format(),
-        Montant: Montant,
-      };
-
-      if (isSuccess && dataForm) {
-        createBuy.mutate(dataForm);
+      if (isSuccess) {
+        var dataForm: BuyCreate = {
+          stockSymbol: data.stockSymbol,
+          date: DayJs().format('YYYY-MM-DDTHH:mm:ssZ[Z]'),
+          price: 1, // TODO: get price from new Input
+          amount: 1, // TODO: get amount from new Input
+        };
+        createBuyMutation.mutate(dataForm);
       }
       handleCancel();
     };
@@ -173,29 +174,28 @@ const Dividende: FC = (): JSX.Element => {
       setMontant(Number(e.target.value));
     };
 
-    const DayJs_Date_Paiement =
-      isSuccess && data.length > 0 ? DayJs(data[0].Date_Paiement) : DayJs();
+    const DayJs_Date_Paiement = isSuccess ? DayJs(data.datePaiement) : DayJs();
 
     return (
       <div className="col-span-1 row-span-2 bg-slate-800 rounded-lg shadow-lg py-4 px-2">
         <Suspense fallback={<div>Loading...</div>}>
-          {isSuccess && data.length > 0 ? (
+          {isSuccess ? (
             <div className="flex flex-col justify-between h-full">
               <div>
                 <p className="text-center text-2xl sm:text-3xl font-extrabold tracking-tight mb-4">
-                  Buy {data[0].Symbol} stock
+                  Buy {data.stockSymbol} stock
                 </p>
                 <p className="text-lg">
                   {`${
-                    data[0].Symbol
+                    data.stockSymbol
                   } is a stock that is currently dividende at ${
-                    data[0].Dividende
+                    data.dividendePerShare
                   }$ per share. If you buy for ${Montant}$ you will get ${
                     StockPrice
                       ? String(
                           (
                             (Montant / StockPrice) *
-                            (data[0].Dividende as number) *
+                            (data.dividendePerShare as number) *
                             0.7
                           ).toFixed(2),
                         )

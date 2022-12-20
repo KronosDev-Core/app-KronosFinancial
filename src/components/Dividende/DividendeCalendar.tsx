@@ -1,6 +1,5 @@
 import { FC, SVGProps } from 'react';
 
-import { Dividende } from '@Types/dataApi';
 import DayJs from '@Local/utils/DayJs';
 import buyDividendeStore, {
   StateBuyDividende,
@@ -9,14 +8,16 @@ import Button from '@Components/Template/button';
 import StockBuyIcon from '@SVG/StockBuy';
 import AddIcon from '@SVG/Add';
 import UpdateIcon from '@SVG/Update';
+import { Dividende, Status } from '@Types/index';
 
 const DividendeCalendar: FC<Dividende> = ({
   _id,
-  Status,
-  Symbol,
-  Date_ExDiv,
-  Date_Paiement,
-  Dividende,
+  dateExDividende,
+  datePaiement,
+  dividendePerShare,
+  status,
+  stockSymbol,
+  stock,
 }: Dividende): JSX.Element => {
   const BuyDividendeStore = buyDividendeStore(
     (state: StateBuyDividende) => state,
@@ -26,32 +27,30 @@ const DividendeCalendar: FC<Dividende> = ({
     className: 'h-8 w-8 fill-slate-200  mx-auto',
   };
 
-  const DayJs_Exdiv = DayJs(Date_ExDiv).format('DD/MM/YYYY'),
-    DayJs_Paiement = DayJs(Date_Paiement).format('DD/MM/YYYY');
+  const DayJs_Exdiv = DayJs(dateExDividende).format('DD/MM/YYYY'),
+    DayJs_Paiement = DayJs(datePaiement).format('DD/MM/YYYY');
 
   return (
     <tr className="text-center text-xl h-[5rem] hover:bg-slate-900 rounded-lg transition-all easy-in-out duration-300">
       <td className="rounded-l-lg">
-        {
-          Status === "New"
-            ? <AddIcon {...propsSvg} />
-            : Status === "Update"
-              ? <UpdateIcon {...propsSvg} />
-              : null
-        }
+        {status === Status.NEW ? (
+          <AddIcon {...propsSvg} />
+        ) : status === Status.UPDATED ? (
+          <UpdateIcon {...propsSvg} />
+        ) : null}
       </td>
       <td>
         <a
-          href={`https://www.etoro.com/fr/markets/${Symbol}`}
+          href={`https://www.etoro.com/fr/markets/${stockSymbol}`}
           target="_blank"
           className="underline-offset-4 [&:not(:hover)]:underline"
         >
-          {Symbol}
+          {stockSymbol}
         </a>
       </td>
       <td>{DayJs_Exdiv === 'Invalid Date' ? 'N/A' : DayJs_Exdiv}</td>
       <td>{DayJs_Paiement === 'Invalid Date' ? 'N/A' : DayJs_Paiement}</td>
-      <td className="slashed-zero lining-nums tabular-nums">{`${Dividende} $`}</td>
+      <td className="slashed-zero lining-nums tabular-nums">{`${dividendePerShare} $`}</td>
       <td className="rounded-r-lg">
         <Button
           callback={() => BuyDividendeStore.set(_id ? _id.toString() : '')}

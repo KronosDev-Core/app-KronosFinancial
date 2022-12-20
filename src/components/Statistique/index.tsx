@@ -3,16 +3,15 @@ import { FC, SVGProps } from 'react';
 import CalendarIcon from '@SVG/Calendar';
 import ClockIcon from '@SVG/Clock';
 import MoneyIcon from '@SVG/Money';
-import { Buy as BuyType } from '@Types/dataApi';
 import { useQuery } from '@tanstack/react-query';
-import axiosInstance from '@Local/utils/Axios';
 import DayJs from '@Local/utils/DayJs';
+import { Buy } from '@Types/index';
+import { getAllBuys } from '@Local/api/buy';
 
 const Statistique: FC = (): JSX.Element => {
-  const { data, isSuccess } = useQuery<BuyType[]>({
+  const { data, isSuccess } = useQuery<Buy[]>({
     queryKey: ['buys'],
-    queryFn: (): Promise<BuyType[]> =>
-      axiosInstance.get('/buys').then((res) => res.data),
+    queryFn: getAllBuys,
     onError: (err) => console.log(err),
   });
 
@@ -41,28 +40,30 @@ const Statistique: FC = (): JSX.Element => {
       totalTradeSumBuy = 0,
       totalTradeSumSell = 0,
       totalTradeSumDiv = 0,
-      nextEndStock = (data as BuyType[])
-        .filter((buy) => buy.Open)
-        .sort((a, b) =>
-          DayJs(a.Date_ExDiv) // @ts-ignore
-            .businessDaysAdd(1)
-            .isAfter(
-              DayJs(b.Stock_Price_Date) // @ts-ignore
-                .businessDaysAdd(1),
-            )
-            ? 1
-            : -1,
-        )[0].Date_ExDiv;
+      nextEndStock = isSuccess
+        ? data
+            .filter((buy) => buy.sell !== null)
+            .sort((a, b) =>
+              DayJs(a.stock.dividende?.dateExDividende) // @ts-ignore
+                .businessDaysAdd(1)
+                .isAfter(
+                  DayJs(b.date) // @ts-ignore
+                    .businessDaysAdd(1),
+                )
+                ? 1
+                : -1,
+            )[0].stock.dividende?.dateExDividende
+        : '';
 
     if (isSuccess) {
       meanGainIdx = data.length;
-      data.map((buy: BuyType) => {
+      data.map((buy: Buy) => {
         /* ------------------ Rework ------------------ */
         // Next Trade
 
-        var DayJs_Stock_Price_Date = DayJs(buy.Stock_Price_Date),
-          DayJs_Date_ExDiv = DayJs(buy.Date_ExDiv),
-          DayJs_Date_Paiement = DayJs(buy.Date_Paiement);
+        var DayJs_Stock_Price_Date = DayJs(buy.date),
+          DayJs_Date_ExDiv = DayJs(buy.stock.dividende?.dateExDividende),
+          DayJs_Date_Paiement = DayJs(buy.stock.dividende?.datePaiement);
 
         // Buy
         if (DayJs_Stock_Price_Date.isSameOrBefore(DayJs_Now)) {
@@ -72,16 +73,16 @@ const Statistique: FC = (): JSX.Element => {
             )
           ) {
             nextTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')][0] +=
-              buy.Montant as number;
+              buy.amount as number;
             nextTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')][3].push(
-              buy.Symbol as string,
+              buy.stockSymbol as string,
             );
           } else {
             nextTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')] = [
-              buy.Montant as number,
+              buy.amount as number,
               0,
               0,
-              [buy.Symbol as string],
+              [buy.stockSymbol as string],
             ];
           }
         }
@@ -100,15 +101,15 @@ const Statistique: FC = (): JSX.Element => {
           ) {
             nextTrade[ // @ts-ignore
               DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
-            ][1] += buy.Montant as number;
+            ][1] += buy.amount as number;
             nextTrade[ // @ts-ignore
               DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
             ][3]
-              .push(buy.Symbol as string);
+              .push(buy.stockSymbol as string);
           } else {
             nextTrade[ // @ts-ignore
               DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
-            ] = [0, buy.Montant as number, 0, [buy.Symbol as string]];
+            ] = [0, buy.amount as number, 0, [buy.stockSymbol as string]];
           }
         }
 
@@ -120,20 +121,20 @@ const Statistique: FC = (): JSX.Element => {
             )
           ) {
             nextTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')][2] +=
-              ((buy.Montant as number) / (buy.Stock_Price as number)) *
-              (buy.Dividende as number) *
+              ((buy.amount as number) / (buy.price as number)) *
+              (buy.stock.dividende?.dividendePerShare as number) *
               0.7;
             nextTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')][3].push(
-              buy.Symbol as string,
+              buy.stockSymbol as string,
             );
           } else {
             nextTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')] = [
               0,
               0,
-              ((buy.Montant as number) / (buy.Stock_Price as number)) *
-                (buy.Dividende as number) *
+              ((buy.amount as number) / (buy.price as number)) *
+                (buy.stock.dividende?.dividendePerShare as number) *
                 0.7,
-              [buy.Symbol as string],
+              [buy.stockSymbol as string],
             ];
           }
         }
@@ -148,16 +149,16 @@ const Statistique: FC = (): JSX.Element => {
             )
           ) {
             monthTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')][0] +=
-              buy.Montant as number;
+              buy.amount as number;
             monthTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')][3].push(
-              buy.Symbol as string,
+              buy.stockSymbol as string,
             );
           } else {
             monthTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')] = [
-              buy.Montant as number,
+              buy.amount as number,
               0,
               0,
-              [buy.Symbol as string],
+              [buy.stockSymbol as string],
             ];
           }
         }
@@ -175,15 +176,15 @@ const Statistique: FC = (): JSX.Element => {
           ) {
             monthTrade[ // @ts-ignore
               DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
-            ][1] += buy.Montant as number;
+            ][1] += buy.amount as number;
             monthTrade[ // @ts-ignore
               DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
             ][3]
-              .push(buy.Symbol as string);
+              .push(buy.stockSymbol as string);
           } else {
             monthTrade[ // @ts-ignore
               DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
-            ] = [0, buy.Montant as number, 0, [buy.Symbol as string]];
+            ] = [0, buy.amount as number, 0, [buy.stockSymbol as string]];
           }
         }
 
@@ -195,20 +196,20 @@ const Statistique: FC = (): JSX.Element => {
             )
           ) {
             monthTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')][2] +=
-              ((buy.Montant as number) / (buy.Stock_Price as number)) *
-              (buy.Dividende as number) *
+              ((buy.amount as number) / (buy.price as number)) *
+              (buy.stock.dividende?.dividendePerShare as number) *
               0.7;
             monthTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')][3].push(
-              buy.Symbol as string,
+              buy.stockSymbol as string,
             );
           } else {
             monthTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')] = [
               0,
               0,
-              ((buy.Montant as number) / (buy.Stock_Price as number)) *
-                (buy.Dividende as number) *
+              ((buy.amount as number) / (buy.price as number)) *
+                (buy.stock.dividende?.dividendePerShare as number) *
                 0.7,
-              [buy.Symbol as string],
+              [buy.stockSymbol as string],
             ];
           }
         }
@@ -226,16 +227,16 @@ const Statistique: FC = (): JSX.Element => {
             )
           ) {
             monthNowTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')][0] +=
-              buy.Montant as number;
+              buy.amount as number;
             monthNowTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')][3].push(
-              buy.Symbol as string,
+              buy.stockSymbol as string,
             );
           } else {
             monthNowTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')] = [
-              buy.Montant as number,
+              buy.amount as number,
               0,
               0,
-              [buy.Symbol as string],
+              [buy.stockSymbol as string],
             ];
           }
         }
@@ -254,15 +255,15 @@ const Statistique: FC = (): JSX.Element => {
           ) {
             monthNowTrade[ // @ts-ignore
               DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
-            ][1] += buy.Montant as number;
+            ][1] += buy.amount as number;
             monthNowTrade[ // @ts-ignore
               DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
             ][3]
-              .push(buy.Symbol as string);
+              .push(buy.stockSymbol as string);
           } else {
             monthNowTrade[ // @ts-ignore
               DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
-            ] = [0, buy.Montant as number, 0, [buy.Symbol as string]];
+            ] = [0, buy.amount as number, 0, [buy.stockSymbol as string]];
           }
         }
 
@@ -277,20 +278,20 @@ const Statistique: FC = (): JSX.Element => {
             )
           ) {
             monthNowTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')][2] +=
-              ((buy.Montant as number) / (buy.Stock_Price as number)) *
-              (buy.Dividende as number) *
+              ((buy.amount as number) / (buy.price as number)) *
+              (buy.stock.dividende?.dividendePerShare as number) *
               0.7;
             monthNowTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')][3].push(
-              buy.Symbol as string,
+              buy.stockSymbol as string,
             );
           } else {
             monthNowTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')] = [
               0,
               0,
-              ((buy.Montant as number) / (buy.Stock_Price as number)) *
-                (buy.Dividende as number) *
+              ((buy.amount as number) / (buy.price as number)) *
+                (buy.stock.dividende?.dividendePerShare as number) *
                 0.7,
-              [buy.Symbol as string],
+              [buy.stockSymbol as string],
             ];
           }
         }
@@ -304,16 +305,16 @@ const Statistique: FC = (): JSX.Element => {
           )
         ) {
           totalTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')][0] +=
-            buy.Montant as number;
+            buy.amount as number;
           totalTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')][3].push(
-            buy.Symbol as string,
+            buy.stockSymbol as string,
           );
         } else {
           totalTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')] = [
-            buy.Montant as number,
+            buy.amount as number,
             0,
             0,
-            [buy.Symbol as string],
+            [buy.stockSymbol as string],
           ];
         }
 
@@ -326,15 +327,15 @@ const Statistique: FC = (): JSX.Element => {
         ) {
           totalTrade[ // @ts-ignore
             DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
-          ][1] += buy.Montant as number;
+          ][1] += buy.amount as number;
           totalTrade[ // @ts-ignore
             DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
           ][3]
-            .push(buy.Symbol as string);
+            .push(buy.stockSymbol as string);
         } else {
           // @ts-ignore
           totalTrade[DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')] =
-            [0, buy.Montant as number, 0, [buy.Symbol as string]];
+            [0, buy.amount as number, 0, [buy.stockSymbol as string]];
         }
 
         // Dividende
@@ -344,20 +345,20 @@ const Statistique: FC = (): JSX.Element => {
           )
         ) {
           totalTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')][2] +=
-            ((buy.Montant as number) / (buy.Stock_Price as number)) *
-            (buy.Dividende as number) *
+            ((buy.amount as number) / (buy.price as number)) *
+            (buy.stock.dividende?.dividendePerShare as number) *
             0.7;
           totalTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')][3].push(
-            buy.Symbol as string,
+            buy.stockSymbol as string,
           );
         } else {
           totalTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')] = [
             0,
             0,
-            ((buy.Montant as number) / (buy.Stock_Price as number)) *
-              (buy.Dividende as number) *
+            ((buy.amount as number) / (buy.price as number)) *
+              (buy.stock.dividende?.dividendePerShare as number) *
               0.7,
-            [buy.Symbol as string],
+            [buy.stockSymbol as string],
           ];
         }
       });

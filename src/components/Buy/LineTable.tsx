@@ -1,15 +1,15 @@
 import { FC, SVGProps } from 'react';
 
-import { Buy as BuyType, UpdateBuy } from '@Types/dataApi';
-import { Buy } from '@Types/dataApi';
 import Button from '@Components/Template/button';
 import StockSellIcon from '@SVG/StockSell';
 import { useMutation } from '@tanstack/react-query';
-import axiosInstance from '@Local/utils/Axios';
+import axiosInstance from '@Local/api/Axios';
 import refetchStore, { StateRefetch } from '@Local/context/Refetch';
 import DayJs from '@Local/utils/DayJs';
 import AddIcon from '@SVG/Add';
 import UpdateIcon from '@SVG/Update';
+import { Buy } from '@Types/index';
+import { deleteBuy, updateBuy } from '@Local/api/buy';
 
 interface Props extends Buy {
   index: number;
@@ -18,15 +18,12 @@ interface Props extends Buy {
 
 const LineTable: FC<Props> = ({
   _id,
-  Symbol,
-  Date_ExDiv,
-  Date_Paiement,
-  Dividende,
-  Open,
-  Stock_Price,
-  Stock_Price_Date,
-  Montant,
-  Status,
+  date,
+  price,
+  amount,
+  stock,
+  stockSymbol,
+  sell,
   index,
   lastIndex,
 }): JSX.Element => {
@@ -39,56 +36,22 @@ const LineTable: FC<Props> = ({
 
   const DeleteBuy = useMutation({
     mutationKey: ['createBuy'],
-    mutationFn: (data: string): Promise<BuyType> =>
-      axiosInstance.delete(`/buy/${data}`).then((res) => res.data),
-    onSuccess: () => {
-      RefetchStore();
-    },
-  });
-
-  const UpdateBuy = useMutation({
-    mutationKey: ['updateBuy'],
-    mutationFn: (data: UpdateBuy): Promise<UpdateBuy> =>
-      axiosInstance.put(`/buy/${data._id}`, data).then((res) => res.data),
+    mutationFn: deleteBuy,
     onSuccess: () => {
       RefetchStore();
     },
   });
 
   const handleSell = () => {
-    DeleteBuy.mutate(_id as string);
+    DeleteBuy.mutate(_id);
   };
 
-  const handleUpdate = () => {
-    UpdateBuy.mutate({
-      _id,
-      Open: !Open,
-    });
-  };
-
-  const DayJs_Date_ExDiv = DayJs(Date_ExDiv),
-    DayJs_Date_Paiement = DayJs(Date_Paiement),
-    DayJs_Stock_Price_Date = DayJs(Stock_Price_Date);
+  const DayJs_Date_ExDiv = DayJs(stock.dividende?.dateExDividende),
+    DayJs_Date_Paiement = DayJs(stock.dividende?.datePaiement),
+    DayJs_Stock_Price_Date = DayJs(date);
 
   return (
     <tr className="text-center text-xl h-[5rem] hover:bg-slate-900 rounded-lg transition-all easy-in-out duration-300">
-      <td className="rounded-l-lg">
-        {Status === 'New' ? (
-          <AddIcon {...propsSvg} />
-        ) : Status === 'Update' ? (
-          <UpdateIcon {...propsSvg} />
-        ) : null}
-      </td>
-      <td>
-        <Button callback={handleUpdate}>
-          <div
-            className={
-              'h-3 w-3 m-auto rounded-full ' +
-              (Open ? 'bg-green-500' : 'bg-red-500')
-            }
-          />
-        </Button>
-      </td>
       <td>
         <div className="w-full h-full grid grid-cols-4 grid-rows-1 -my-2">
           <div className="w-full h-full grid grid-cols-1 grid-rows-3 gap-y-3 px-2">
@@ -215,11 +178,11 @@ const LineTable: FC<Props> = ({
       </td>
       <td>
         <a
-          href={`https://www.etoro.com/fr/markets/${Symbol}`}
+          href={`https://www.etoro.com/fr/markets/${stockSymbol}`}
           target="_blank"
           className="underline-offset-4 [&:not(:hover)]:underline"
         >
-          {Symbol}
+          {stockSymbol}
         </a>
       </td>
       <td>
@@ -254,8 +217,8 @@ const LineTable: FC<Props> = ({
       <td>
         {DayJs_Stock_Price_Date.isBefore(DayJs_Date_ExDiv)
           ? `~ ${(
-              ((Montant as number) / (Stock_Price as number)) *
-              (Dividende as number) *
+              ((amount as number) / (price as number)) *
+              (stock.dividende?.dividendePerShare as number) *
               0.7
             ).toFixed(2)} $`
           : 'N/A'}

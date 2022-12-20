@@ -1,19 +1,18 @@
 import { FC, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
-import { Buy as BuyType } from '@Types/dataApi';
 import LineTable from './LineTable';
-import axiosInstance from '@Local/utils/Axios';
 import refetchStore, { StateRefetch } from '@Local/context/Refetch';
 import DayJs from '@Local/utils/DayJs';
+import { Buy as BuyType } from '@Types/index';
+import { getAllBuys } from '@Local/api/buy';
 
 const Buy: FC = (): JSX.Element => {
   const RefetchStore = refetchStore((state: StateRefetch) => state.set);
 
   const { data, isSuccess, refetch } = useQuery<BuyType[]>({
     queryKey: ['buys'],
-    queryFn: (): Promise<BuyType[]> =>
-      axiosInstance.get('/buys').then((res) => res.data),
+    queryFn: getAllBuys,
     onError: (error) => console.log(error),
   });
   RefetchStore(refetch);
@@ -26,8 +25,6 @@ const Buy: FC = (): JSX.Element => {
             <table className="table-auto w-full h-fit border-separate border-spacing-y-2">
               <thead>
                 <tr>
-                  <th className="text-xl">Status</th>
-                  <th className="text-xl">Open</th>
                   <th className="text-xl">Peer</th>
                   <th className="text-xl">Symbol</th>
                   <th className="text-xl">Buy</th>
@@ -43,13 +40,9 @@ const Buy: FC = (): JSX.Element => {
                 <Suspense fallback={<div>Loading...</div>}>
                   {isSuccess && data.length > 0
                     ? data
-                        .sort((a, _b) => (a.Open ? -1 : 1))
+                        .sort((a, _b) => (a.sell ? -1 : 1))
                         .sort((a, b) =>
-                          DayJs(a.Stock_Price_Date).isAfter(
-                            DayJs(b.Stock_Price_Date),
-                          )
-                            ? 1
-                            : -1,
+                          DayJs(a.date).isAfter(DayJs(b.date)) ? 1 : -1,
                         )
                         .map((buy, idx) => (
                           <LineTable
