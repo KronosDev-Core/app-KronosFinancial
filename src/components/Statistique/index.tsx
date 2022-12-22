@@ -5,8 +5,10 @@ import ClockIcon from '@SVG/Clock';
 import MoneyIcon from '@SVG/Money';
 import { useQuery } from '@tanstack/react-query';
 import DayJs from '@Local/utils/DayJs';
-import { Buy } from '@Types/index';
+import { Buy, DayJs as DayJsType } from '@Types/index';
 import { getAllBuys } from '@Local/api/buy';
+import { tonum } from '@Local/utils/type';
+import { add, sub, mul, dividendeFormule, div } from '@Local/utils/Math';
 
 const Statistique: FC = (): JSX.Element => {
   const { data, isSuccess } = useQuery<Buy[]>({
@@ -23,36 +25,41 @@ const Statistique: FC = (): JSX.Element => {
   const StatistiqueItem: FC = (): JSX.Element => {
     /* ------------------ Rework Var ------------------ */
 
+    type ObjectTrade = {
+      [x: string]: [Number, Number, Number, String[]];
+    };
     var meanGainIdx = 0,
-      nextTrade: { [x: string]: [number, number, number, string[]] } = {}, // [0] = Buy, [1] = Sell, [2] = Dividende
+      nextTrade: ObjectTrade = {}, // [0] = Buy, [1] = Sell, [2] = Dividende
       nextTradeSumBuy = 0,
       nextTradeSumSell = 0,
       nextTradeSumDiv = 0,
-      monthTrade: { [x: string]: [number, number, number, string[]] } = {}, // [0] = Buy, [1] = Sell, [2] = Dividende
+      monthTrade: ObjectTrade = {}, // [0] = Buy, [1] = Sell, [2] = Dividende
       _monthTradeSumBuy = 0, // Not used
       _monthTradeSumSell = 0, // Not used
       monthTradeSumDiv = 0,
-      monthNowTrade: { [x: string]: [number, number, number, string[]] } = {}, // [0] = Buy, [1] = Sell, [2] = Dividende
+      monthNowTrade: ObjectTrade = {}, // [0] = Buy, [1] = Sell, [2] = Dividende
       monthNowTradeSumBuy = 0,
       monthNowTradeSumSell = 0,
       monthNowTradeSumDiv = 0,
-      totalTrade: { [x: string]: [number, number, number, string[]] } = {}, // [0] = Buy, [1] = Sell, [2] = Dividende
+      totalTrade: ObjectTrade = {}, // [0] = Buy, [1] = Sell, [2] = Dividende
       totalTradeSumBuy = 0,
       totalTradeSumSell = 0,
       totalTradeSumDiv = 0,
-      nextEndStock = isSuccess
+      nextEndStockData = isSuccess
         ? data
-            .filter((buy) => buy.sell !== null)
+            .filter((buy) => buy.sell === null)
             .sort((a, b) =>
-              DayJs(a.stock.dividende?.dateExDividende) // @ts-ignore
+              DayJs(a.dividende.dateExDividende)
                 .businessDaysAdd(1)
-                .isAfter(
-                  DayJs(b.date) // @ts-ignore
-                    .businessDaysAdd(1),
-                )
+                .isAfter(DayJs(b.date).businessDaysAdd(1))
                 ? 1
                 : -1,
-            )[0].stock.dividende?.dateExDividende
+            )
+        : null;
+
+    const nextEndStock: String =
+      nextEndStockData && nextEndStockData?.length > 0
+        ? nextEndStockData[0].dividende.dateExDividende
         : '';
 
     if (isSuccess) {
@@ -62,8 +69,44 @@ const Statistique: FC = (): JSX.Element => {
         // Next Trade
 
         var DayJs_Stock_Price_Date = DayJs(buy.date),
-          DayJs_Date_ExDiv = DayJs(buy.stock.dividende?.dateExDividende),
-          DayJs_Date_Paiement = DayJs(buy.stock.dividende?.datePaiement);
+          DayJs_Date_ExDiv = DayJs(buy.dividende.dateExDividende),
+          DayJs_Date_Paiement = DayJs(buy.dividende.datePaiement);
+
+        var nT_SPD = nextTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')],
+          nT_DED =
+            nextTrade[DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')],
+          nT_DP = nextTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')],
+          mT_SPD = monthTrade[DayJs_Stock_Price_Date.format('MM/YYYY')],
+          mT_DED1 =
+            monthTrade[
+              DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
+            ],
+          mT_DP = monthTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')],
+          mNT_SPD = monthNowTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')],
+          mNT_DED1 =
+            monthNowTrade[
+              DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
+            ],
+          mNT_DP = monthNowTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')],
+          tT_SPD = totalTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')],
+          tT_DED1 =
+            totalTrade[
+              DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
+            ],
+          tT_DP = totalTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')];
+
+        nT_SPD = nT_SPD ? nT_SPD : [0, 0, 0, []];
+        nT_DED = nT_DED ? nT_DED : [0, 0, 0, []];
+        nT_DP = nT_DP ? nT_DP : [0, 0, 0, []];
+        mT_SPD = mT_SPD ? mT_SPD : [0, 0, 0, []];
+        mT_DED1 = mT_DED1 ? mT_DED1 : [0, 0, 0, []];
+        mT_DP = mT_DP ? mT_DP : [0, 0, 0, []];
+        mNT_SPD = mNT_SPD ? mNT_SPD : [0, 0, 0, []];
+        mNT_DED1 = mNT_DED1 ? mNT_DED1 : [0, 0, 0, []];
+        mNT_DP = mNT_DP ? mNT_DP : [0, 0, 0, []];
+        tT_SPD = tT_SPD ? tT_SPD : [0, 0, 0, []];
+        tT_DED1 = tT_DED1 ? tT_DED1 : [0, 0, 0, []];
+        tT_DP = tT_DP ? tT_DP : [0, 0, 0, []];
 
         // Buy
         if (DayJs_Stock_Price_Date.isSameOrBefore(DayJs_Now)) {
@@ -72,44 +115,27 @@ const Statistique: FC = (): JSX.Element => {
               DayJs_Stock_Price_Date.format('DD/MM/YYYY'),
             )
           ) {
-            nextTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')][0] +=
-              buy.amount as number;
-            nextTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')][3].push(
-              buy.stockSymbol as string,
-            );
+            nT_SPD[0] = add(nT_SPD[0], buy.amount);
+            nT_SPD[3].push(buy.dividende.stockSymbol);
           } else {
-            nextTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')] = [
-              buy.amount as number,
-              0,
-              0,
-              [buy.stockSymbol as string],
-            ];
+            nT_SPD = [buy.amount, 0, 0, [buy.dividende.stockSymbol]];
           }
         }
 
         // Sell
         if (
-          // @ts-ignore
-          DayJs_Date_ExDiv.businessDaysAdd(1).isBefore(DayJs_Now) || // @ts-ignore
+          DayJs_Date_ExDiv.businessDaysAdd(1).isBefore(DayJs_Now) ||
           DayJs_Date_ExDiv.businessDaysAdd(1).isSame(DayJs_Now)
         ) {
           if (
             Object.keys(nextTrade).includes(
-              // @ts-ignore
               DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY'),
             )
           ) {
-            nextTrade[ // @ts-ignore
-              DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
-            ][1] += buy.amount as number;
-            nextTrade[ // @ts-ignore
-              DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
-            ][3]
-              .push(buy.stockSymbol as string);
+            nT_DED[1] = add(nT_DED[1], buy.amount);
+            nT_DED[3].push(buy.dividende.stockSymbol);
           } else {
-            nextTrade[ // @ts-ignore
-              DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
-            ] = [0, buy.amount as number, 0, [buy.stockSymbol as string]];
+            nT_DED = [0, buy.amount, 0, [buy.dividende.stockSymbol]];
           }
         }
 
@@ -120,21 +146,22 @@ const Statistique: FC = (): JSX.Element => {
               DayJs_Date_Paiement.format('DD/MM/YYYY'),
             )
           ) {
-            nextTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')][2] +=
-              ((buy.amount as number) / (buy.price as number)) *
-              (buy.stock.dividende?.dividendePerShare as number) *
-              0.7;
-            nextTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')][3].push(
-              buy.stockSymbol as string,
+            nT_DP[2] = dividendeFormule(
+              buy.amount,
+              buy.price,
+              buy.dividende.dividendePerShare,
             );
+            nT_DP[3].push(buy.dividende.stockSymbol);
           } else {
-            nextTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')] = [
+            nT_DP = [
               0,
               0,
-              ((buy.amount as number) / (buy.price as number)) *
-                (buy.stock.dividende?.dividendePerShare as number) *
-                0.7,
-              [buy.stockSymbol as string],
+              dividendeFormule(
+                buy.amount,
+                buy.price,
+                buy.dividende.dividendePerShare,
+              ),
+              [buy.dividende.stockSymbol],
             ];
           }
         }
@@ -148,43 +175,24 @@ const Statistique: FC = (): JSX.Element => {
               DayJs_Stock_Price_Date.format('DD/MM/YYYY'),
             )
           ) {
-            monthTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')][0] +=
-              buy.amount as number;
-            monthTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')][3].push(
-              buy.stockSymbol as string,
-            );
+            mT_SPD[0] = add(mT_SPD[0], buy.amount);
+            mT_SPD[3].push(buy.dividende.stockSymbol);
           } else {
-            monthTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')] = [
-              buy.amount as number,
-              0,
-              0,
-              [buy.stockSymbol as string],
-            ];
+            mT_SPD = [buy.amount, 0, 0, [buy.dividende.stockSymbol]];
           }
         }
 
         // Sell
-        if (
-          // @ts-ignore
-          DayJs_Date_ExDiv.businessDaysAdd(1).isSame(DayJs_Now, 'month')
-        ) {
+        if (DayJs_Date_ExDiv.businessDaysAdd(1).isSame(DayJs_Now, 'month')) {
           if (
             Object.keys(monthTrade).includes(
-              // @ts-ignore
               DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY'),
             )
           ) {
-            monthTrade[ // @ts-ignore
-              DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
-            ][1] += buy.amount as number;
-            monthTrade[ // @ts-ignore
-              DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
-            ][3]
-              .push(buy.stockSymbol as string);
+            mT_DED1[1] = add(mT_DED1[1], buy.amount);
+            mT_DED1[3].push(buy.dividende.stockSymbol);
           } else {
-            monthTrade[ // @ts-ignore
-              DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
-            ] = [0, buy.amount as number, 0, [buy.stockSymbol as string]];
+            mT_DED1 = [0, buy.amount, 0, [buy.dividende.stockSymbol]];
           }
         }
 
@@ -195,21 +203,22 @@ const Statistique: FC = (): JSX.Element => {
               DayJs_Date_Paiement.format('DD/MM/YYYY'),
             )
           ) {
-            monthTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')][2] +=
-              ((buy.amount as number) / (buy.price as number)) *
-              (buy.stock.dividende?.dividendePerShare as number) *
-              0.7;
-            monthTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')][3].push(
-              buy.stockSymbol as string,
+            mT_DP[2] = dividendeFormule(
+              buy.amount,
+              buy.price,
+              buy.dividende.dividendePerShare,
             );
+            mT_DP[3].push(buy.dividende.stockSymbol);
           } else {
             monthTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')] = [
               0,
               0,
-              ((buy.amount as number) / (buy.price as number)) *
-                (buy.stock.dividende?.dividendePerShare as number) *
-                0.7,
-              [buy.stockSymbol as string],
+              dividendeFormule(
+                buy.amount,
+                buy.price,
+                buy.dividende.dividendePerShare,
+              ),
+              [buy.dividende.stockSymbol],
             ];
           }
         }
@@ -226,44 +235,27 @@ const Statistique: FC = (): JSX.Element => {
               DayJs_Stock_Price_Date.format('DD/MM/YYYY'),
             )
           ) {
-            monthNowTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')][0] +=
-              buy.amount as number;
-            monthNowTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')][3].push(
-              buy.stockSymbol as string,
-            );
+            mNT_SPD[0] = add(mNT_SPD[0], buy.amount);
+            mNT_SPD[3].push(buy.dividende.stockSymbol);
           } else {
-            monthNowTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')] = [
-              buy.amount as number,
-              0,
-              0,
-              [buy.stockSymbol as string],
-            ];
+            mNT_SPD = [buy.amount, 0, 0, [buy.dividende.stockSymbol]];
           }
         }
 
         // Sell
         if (
-          // @ts-ignore
-          DayJs_Date_ExDiv.businessDaysAdd(1).isBefore(DayJs_Now) && // @ts-ignore
+          DayJs_Date_ExDiv.businessDaysAdd(1).isBefore(DayJs_Now) &&
           DayJs_Date_ExDiv.businessDaysAdd(1).isSame(DayJs_Now, 'month')
         ) {
           if (
             Object.keys(monthNowTrade).includes(
-              // @ts-ignore
               DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY'),
             )
           ) {
-            monthNowTrade[ // @ts-ignore
-              DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
-            ][1] += buy.amount as number;
-            monthNowTrade[ // @ts-ignore
-              DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
-            ][3]
-              .push(buy.stockSymbol as string);
+            mNT_DED1[1] = add(mNT_DED1[1], buy.amount);
+            mNT_DED1[3].push(buy.dividende.stockSymbol);
           } else {
-            monthNowTrade[ // @ts-ignore
-              DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
-            ] = [0, buy.amount as number, 0, [buy.stockSymbol as string]];
+            mNT_DED1 = [0, buy.amount, 0, [buy.dividende.stockSymbol]];
           }
         }
 
@@ -277,21 +269,22 @@ const Statistique: FC = (): JSX.Element => {
               DayJs_Date_Paiement.format('DD/MM/YYYY'),
             )
           ) {
-            monthNowTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')][2] +=
-              ((buy.amount as number) / (buy.price as number)) *
-              (buy.stock.dividende?.dividendePerShare as number) *
-              0.7;
-            monthNowTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')][3].push(
-              buy.stockSymbol as string,
+            mNT_DP[2] = dividendeFormule(
+              buy.amount,
+              buy.price,
+              buy.dividende.dividendePerShare,
             );
+            mNT_DP[3].push(buy.dividende.stockSymbol);
           } else {
-            monthNowTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')] = [
+            mNT_DP = [
               0,
               0,
-              ((buy.amount as number) / (buy.price as number)) *
-                (buy.stock.dividende?.dividendePerShare as number) *
-                0.7,
-              [buy.stockSymbol as string],
+              dividendeFormule(
+                buy.amount,
+                buy.price,
+                buy.dividende.dividendePerShare,
+              ),
+              [buy.dividende.stockSymbol],
             ];
           }
         }
@@ -304,38 +297,22 @@ const Statistique: FC = (): JSX.Element => {
             DayJs_Stock_Price_Date.format('DD/MM/YYYY'),
           )
         ) {
-          totalTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')][0] +=
-            buy.amount as number;
-          totalTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')][3].push(
-            buy.stockSymbol as string,
-          );
+          tT_SPD[0] = add(tT_SPD[0], buy.amount);
+          tT_SPD[3].push(buy.dividende.stockSymbol);
         } else {
-          totalTrade[DayJs_Stock_Price_Date.format('DD/MM/YYYY')] = [
-            buy.amount as number,
-            0,
-            0,
-            [buy.stockSymbol as string],
-          ];
+          tT_SPD = [buy.amount, 0, 0, [buy.dividende.stockSymbol]];
         }
 
         // Sell
         if (
           Object.keys(totalTrade).includes(
-            // @ts-ignore
             DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY'),
           )
         ) {
-          totalTrade[ // @ts-ignore
-            DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
-          ][1] += buy.amount as number;
-          totalTrade[ // @ts-ignore
-            DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')
-          ][3]
-            .push(buy.stockSymbol as string);
+          tT_DED1[1] = add(tT_DED1[1], buy.amount);
+          tT_DED1[3].push(buy.dividende.stockSymbol);
         } else {
-          // @ts-ignore
-          totalTrade[DayJs_Date_ExDiv.businessDaysAdd(1).format('DD/MM/YYYY')] =
-            [0, buy.amount as number, 0, [buy.stockSymbol as string]];
+          tT_DED1 = [0, buy.amount, 0, [buy.dividende.stockSymbol]];
         }
 
         // Dividende
@@ -344,21 +321,22 @@ const Statistique: FC = (): JSX.Element => {
             DayJs_Date_Paiement.format('DD/MM/YYYY'),
           )
         ) {
-          totalTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')][2] +=
-            ((buy.amount as number) / (buy.price as number)) *
-            (buy.stock.dividende?.dividendePerShare as number) *
-            0.7;
-          totalTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')][3].push(
-            buy.stockSymbol as string,
+          tT_DP[2] = dividendeFormule(
+            buy.amount,
+            buy.price,
+            buy.dividende.dividendePerShare,
           );
+          tT_DP[3].push(buy.dividende.stockSymbol);
         } else {
-          totalTrade[DayJs_Date_Paiement.format('DD/MM/YYYY')] = [
+          tT_DP = [
             0,
             0,
-            ((buy.amount as number) / (buy.price as number)) *
-              (buy.stock.dividende?.dividendePerShare as number) *
-              0.7,
-            [buy.stockSymbol as string],
+            dividendeFormule(
+              buy.amount,
+              buy.price,
+              buy.dividende.dividendePerShare,
+            ),
+            [buy.dividende.stockSymbol],
           ];
         }
       });
@@ -387,27 +365,27 @@ const Statistique: FC = (): JSX.Element => {
 
       // somme des montants
       Object.entries(nextTrade).map((trade) => {
-        nextTradeSumBuy += trade[1][0];
-        nextTradeSumSell += trade[1][1];
-        nextTradeSumDiv += trade[1][2];
+        nextTradeSumBuy = tonum(add(nextTradeSumBuy, trade[1][0]));
+        nextTradeSumSell = tonum(add(nextTradeSumSell, trade[1][1]));
+        nextTradeSumDiv = tonum(add(nextTradeSumDiv, trade[1][2]));
       });
 
       Object.entries(monthTrade).map((trade) => {
-        _monthTradeSumBuy += trade[1][0];
-        _monthTradeSumSell += trade[1][1];
-        monthTradeSumDiv += trade[1][2];
+        _monthTradeSumBuy = tonum(add(_monthTradeSumBuy, trade[1][0]));
+        _monthTradeSumSell = tonum(add(_monthTradeSumSell, trade[1][1]));
+        monthTradeSumDiv = tonum(add(monthTradeSumDiv, trade[1][2]));
       });
 
       Object.entries(monthNowTrade).map((trade) => {
-        monthNowTradeSumBuy += trade[1][0];
-        monthNowTradeSumSell += trade[1][1];
-        monthNowTradeSumDiv += trade[1][2];
+        monthNowTradeSumBuy = tonum(add(monthNowTradeSumBuy, trade[1][0]));
+        monthNowTradeSumSell = tonum(add(monthNowTradeSumSell, trade[1][1]));
+        monthNowTradeSumDiv = tonum(add(monthNowTradeSumDiv, trade[1][2]));
       });
 
       Object.entries(totalTrade).map((trade) => {
-        totalTradeSumBuy += trade[1][0];
-        totalTradeSumSell += trade[1][1];
-        totalTradeSumDiv += trade[1][2];
+        totalTradeSumBuy = tonum(add(totalTradeSumBuy, trade[1][0]));
+        totalTradeSumSell = tonum(add(totalTradeSumSell, trade[1][1]));
+        totalTradeSumDiv = tonum(add(totalTradeSumDiv, trade[1][2]));
       });
     }
 
@@ -417,12 +395,15 @@ const Statistique: FC = (): JSX.Element => {
           {/* Total $ */}
           <p className="text-4xl">
             {isSuccess
-              ? `${(
-                  nextTradeSumSell -
-                  nextTradeSumBuy +
-                  nextTradeSumDiv -
-                  (nextTradeSumSell - nextTradeSumBuy) +
-                  200
+              ? `${add(
+                  sub(
+                    add(
+                      sub(nextTradeSumSell, nextTradeSumBuy),
+                      nextTradeSumDiv,
+                    ),
+                    sub(nextTradeSumSell, nextTradeSumBuy),
+                  ),
+                  200,
                 ).toFixed(2)} $`
               : ''}
           </p>
@@ -432,7 +413,9 @@ const Statistique: FC = (): JSX.Element => {
           {/* Invest $ */}
           <p className="text-4xl">
             {isSuccess
-              ? `${((nextTradeSumSell - nextTradeSumBuy) * -1).toFixed(2)} $`
+              ? `${mul(sub(nextTradeSumSell, nextTradeSumBuy), -1).toFixed(
+                  2,
+                )} $`
               : ''}
           </p>
           <MoneyIcon {...propsSvg} />
@@ -441,11 +424,9 @@ const Statistique: FC = (): JSX.Element => {
           {/* Restant $ */}
           <p className="text-4xl">
             {isSuccess
-              ? `${(
-                  nextTradeSumSell -
-                  nextTradeSumBuy +
-                  nextTradeSumDiv -
-                  (nextTradeSumSell - nextTradeSumBuy)
+              ? `${sub(
+                  add(sub(nextTradeSumSell, nextTradeSumBuy), nextTradeSumDiv),
+                  sub(nextTradeSumSell, nextTradeSumBuy),
                 ).toFixed(2)} $`
               : ''}
           </p>
@@ -462,10 +443,9 @@ const Statistique: FC = (): JSX.Element => {
           {/* Month gain $ */}
           <p className="text-4xl">
             {isSuccess
-              ? `${(
-                  monthNowTradeSumBuy -
-                  monthNowTradeSumSell +
-                  monthNowTradeSumDiv
+              ? `${add(
+                  sub(monthNowTradeSumBuy, monthNowTradeSumSell),
+                  monthNowTradeSumDiv,
                 ).toFixed(2)} $`
               : ''}
           </p>
@@ -475,7 +455,7 @@ const Statistique: FC = (): JSX.Element => {
           {/* Month total dividende restant */}
           <p className="text-4xl">
             {isSuccess
-              ? `~ ${(monthTradeSumDiv - monthNowTradeSumDiv).toFixed(2)} $`
+              ? `~ ${sub(monthTradeSumDiv, monthNowTradeSumDiv).toFixed(2)} $`
               : ''}
           </p>
           <MoneyIcon {...propsSvg} />
@@ -484,13 +464,17 @@ const Statistique: FC = (): JSX.Element => {
           {/* Invest dividende possible */}
           <p className="text-4xl">
             {isSuccess
-              ? `~ ${(
-                  (totalTradeSumDiv / meanGainIdx) * // @ts-ignore
-                  (DayJs_Now.businessDaysInMonth().length / 3 - // @ts-ignore
-                    DayJs_Now.businessDaysInMonth().filter((date: Dayjs) =>
-                      date.isBefore(DayJs_Now),
-                    ).length /
-                      3)
+              ? `~ ${mul(
+                  div(totalTradeSumDiv, meanGainIdx),
+                  div(
+                    sub(
+                      div(DayJs_Now.businessDaysInMonth().length, 3),
+                      DayJs_Now.businessDaysInMonth().filter(
+                        (date: DayJsType) => date.isBefore(DayJs_Now),
+                      ).length,
+                    ),
+                    3,
+                  ),
                 ).toFixed(2)} $`
               : ''}
           </p>
@@ -499,19 +483,19 @@ const Statistique: FC = (): JSX.Element => {
         <div className="col-span-1 row-span-1 bg-slate-800 rounded-lg shadow-lg flex flex-col justify-center items-center gap-y-3">
           {/* Next date end invest dividende (DateExDiv+3Day) */}
           <p className="text-4xl">
-            {isSuccess
-              ? DayJs(nextEndStock) // @ts-ignore
-                  .businessDaysAdd(1)
-                  .format('DD/MM/YYYY')
-              : ''}
+            {nextEndStock !== ''
+              ? DayJs(nextEndStock).businessDaysAdd(1).format('DD/MM/YYYY')
+              : nextEndStock}
           </p>
           <ClockIcon {...propsSvg} />
         </div>
         <div className="col-span-1 row-span-1 bg-slate-800 rounded-lg shadow-lg flex flex-col justify-center items-center gap-y-3">
           {/*  */}
           <p className="text-4xl">
-            {isSuccess // @ts-ignore
-              ? Math.floor(DayJs_Now.businessDaysInMonth().length / 3)
+            {isSuccess
+              ? Math.floor(
+                  tonum(div(DayJs_Now.businessDaysInMonth().length, 3)),
+                )
               : ''}
           </p>
           <CalendarIcon {...propsSvg} />

@@ -3,13 +3,11 @@ import { FC, SVGProps } from 'react';
 import Button from '@Components/Template/button';
 import StockSellIcon from '@SVG/StockSell';
 import { useMutation } from '@tanstack/react-query';
-import axiosInstance from '@Local/api/Axios';
 import refetchStore, { StateRefetch } from '@Local/context/Refetch';
 import DayJs from '@Local/utils/DayJs';
-import AddIcon from '@SVG/Add';
-import UpdateIcon from '@SVG/Update';
 import { Buy } from '@Types/index';
 import { deleteBuy, updateBuy } from '@Local/api/buy';
+import { dividendeFormule } from '@Local/utils/Math';
 
 interface Props extends Buy {
   index: number;
@@ -17,12 +15,12 @@ interface Props extends Buy {
 }
 
 const LineTable: FC<Props> = ({
-  _id,
+  id,
   date,
   price,
   amount,
-  stock,
-  stockSymbol,
+  dividende,
+  dividendeId,
   sell,
   index,
   lastIndex,
@@ -35,7 +33,6 @@ const LineTable: FC<Props> = ({
   };
 
   const DeleteBuy = useMutation({
-    mutationKey: ['createBuy'],
     mutationFn: deleteBuy,
     onSuccess: () => {
       RefetchStore();
@@ -43,11 +40,11 @@ const LineTable: FC<Props> = ({
   });
 
   const handleSell = () => {
-    DeleteBuy.mutate(_id);
+    DeleteBuy.mutate(id);
   };
 
-  const DayJs_Date_ExDiv = DayJs(stock.dividende?.dateExDividende),
-    DayJs_Date_Paiement = DayJs(stock.dividende?.datePaiement),
+  const DayJs_Date_ExDiv = DayJs(dividende.dateExDividende),
+    DayJs_Date_Paiement = DayJs(dividende.datePaiement),
     DayJs_Stock_Price_Date = DayJs(date);
 
   return (
@@ -178,11 +175,11 @@ const LineTable: FC<Props> = ({
       </td>
       <td>
         <a
-          href={`https://www.etoro.com/fr/markets/${stockSymbol}`}
+          href={`https://www.etoro.com/fr/markets/${dividende.stock.symbol}`}
           target="_blank"
           className="underline-offset-4 [&:not(:hover)]:underline"
         >
-          {stockSymbol}
+          {dividende.stock.symbol}
         </a>
       </td>
       <td>
@@ -216,10 +213,10 @@ const LineTable: FC<Props> = ({
       </td>
       <td>
         {DayJs_Stock_Price_Date.isBefore(DayJs_Date_ExDiv)
-          ? `~ ${(
-              ((amount as number) / (price as number)) *
-              (stock.dividende?.dividendePerShare as number) *
-              0.7
+          ? `~ ${dividendeFormule(
+              amount,
+              price,
+              dividende.dividendePerShare,
             ).toFixed(2)} $`
           : 'N/A'}
       </td>

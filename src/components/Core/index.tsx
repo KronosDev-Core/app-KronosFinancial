@@ -1,5 +1,11 @@
 import { FC } from 'react';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import {
+  createBrowserRouter,
+  Navigate,
+  Outlet,
+  redirect,
+  RouterProvider,
+} from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import Error from '@Components/Template/error';
@@ -9,14 +15,32 @@ const Core: FC = (): JSX.Element => {
   const router = createBrowserRouter([
     {
       path: '/',
-      element: <App />,
+      element: <Outlet />,
       errorElement: <Error />,
-      // children: [
-      //   {
-      //     path: '/',
-      //     element: <App />,
-      //   },
-      // ],
+      children: [
+        {
+          path: '/',
+          element: <Navigate to="/dashboard" replace={!0} />,
+        },
+        {
+          path: 'dashboard',
+          element: <App />,
+        },
+        {
+          path: 'calendar',
+          element: <></>,
+        },
+        {
+          path: 'stock',
+          element: <></>,
+          children: [
+            {
+              path: ':id',
+              element: <></>,
+            },
+          ],
+        },
+      ],
     },
   ]);
 

@@ -108,8 +108,8 @@ const Dividende: FC = (): JSX.Element => {
                       .map((dividende) => (
                         <DividendeCalendar
                           key={
-                            dividende._id
-                              ? String(dividende._id)
+                            dividende.id
+                              ? String(dividende.id)
                               : String(Math.random() * 1000)
                           }
                           {...dividende}
@@ -156,10 +156,10 @@ const Dividende: FC = (): JSX.Element => {
     const handleBuyDividende = () => {
       if (isSuccess) {
         var dataForm: BuyCreate = {
-          stockSymbol: data.stockSymbol,
+          dividendeId: data.id,
           date: DayJs().format('YYYY-MM-DDTHH:mm:ssZ[Z]'),
-          price: 1, // TODO: get price from new Input
-          amount: 1, // TODO: get amount from new Input
+          price: StockPrice,
+          amount: Montant,
         };
         createBuyMutation.mutate(dataForm);
       }

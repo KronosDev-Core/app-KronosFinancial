@@ -46,11 +46,7 @@ const Buy: FC = (): JSX.Element => {
                         )
                         .map((buy, idx) => (
                           <LineTable
-                            key={
-                              buy._id
-                                ? String(buy._id)
-                                : String(Math.random() * 1000)
-                            }
+                            key={buy.id as string}
                             index={idx}
                             lastIndex={data.length - 1}
                             {...buy}

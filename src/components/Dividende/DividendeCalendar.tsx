@@ -11,13 +11,14 @@ import UpdateIcon from '@SVG/Update';
 import { Dividende, Status } from '@Types/index';
 
 const DividendeCalendar: FC<Dividende> = ({
-  _id,
+  id,
   dateExDividende,
   datePaiement,
   dividendePerShare,
   status,
   stockSymbol,
   stock,
+  buy,
 }: Dividende): JSX.Element => {
   const BuyDividendeStore = buyDividendeStore(
     (state: StateBuyDividende) => state,
@@ -53,7 +54,7 @@ const DividendeCalendar: FC<Dividende> = ({
       <td className="slashed-zero lining-nums tabular-nums">{`${dividendePerShare} $`}</td>
       <td className="rounded-r-lg">
         <Button
-          callback={() => BuyDividendeStore.set(_id ? _id.toString() : '')}
+          callback={() => BuyDividendeStore.set(id ? id.toString() : '')}
         >
           <StockBuyIcon {...propsSvg} />
         </Button>
