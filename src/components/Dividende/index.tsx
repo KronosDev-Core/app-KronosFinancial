@@ -1,17 +1,10 @@
 import { FC, Suspense, SVGProps, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import dayjs from 'dayjs';
 
-import {
-  Dividende as DividendeType,
-  Buy as BuyType,
-  CreateBuy as CreateBuyType,
-} from '@Types/dataApi';
+import DayJs from '@Local/utils/DayJs';
 import DividendeCalendar from '@Components/Dividende/DividendeCalendar';
-import axiosInstance from '@Local/utils/Axios';
 import Input from '@Components/Template/input';
 import SearchIcon from '@SVG/Search';
-import ClockIcon from '@SVG/Clock';
 import buyDividendeStore, {
   StateBuyDividende,
 } from '@Local/context/BuyDividende';
@@ -27,6 +20,9 @@ import searchAnnualDivStore, {
   StateSearchAnnualDiv,
 } from '@Local/context/SearchAnnualDiv';
 import TrashIcon from '@SVG/Trash';
+import { getAllDividendes, getOneDividende } from '@Local/api/dividende';
+import { BuyCreate, Dividende as DividendeType } from '@Types/index';
+import { createBuy } from '@Local/api/buy';
 
 const Dividende: FC = (): JSX.Element => {
   const BuyDividendeStore = buyDividendeStore(
@@ -45,8 +41,7 @@ const Dividende: FC = (): JSX.Element => {
   const HeaderDividendeList: FC = (): JSX.Element => {
     const { data, isSuccess } = useQuery<DividendeType[]>({
       queryKey: ['dividendes'],
-      queryFn: (): Promise<DividendeType[]> =>
-        axiosInstance.get('/dividendes').then((res) => res.data),
+      queryFn: getAllDividendes,
       onError: (err) => console.log(err),
     });
 
@@ -58,9 +53,10 @@ const Dividende: FC = (): JSX.Element => {
         }
       >
         <div className="flex w-full h-full overflow-y-auto overflow-x-hidden col-span-1 row-span-1">
-          <table className="table-fixed w-full h-fit border-separate border-spacing-y-2">
+          <table className="table-auto w-full h-fit border-separate border-spacing-y-2">
             <thead>
               <tr className="">
+                <th className="text-xl">Status</th>
                 <th className="text-xl">Symbol</th>
                 <th className="text-xl">Ex-Dividende</th>
                 <th className="text-xl">Paiement</th>
@@ -73,37 +69,47 @@ const Dividende: FC = (): JSX.Element => {
                 {isSuccess && data.length > 0
                   ? data
                       .filter((dividende) =>
+                        SearchAnnualDivStore.val === 0 &&
+                        SearchExDivStore.val === '' &&
+                        SearchSymbolStore.val === ''
+                          ? DayJs(dividende.dateExDividende).isAfter(DayJs()) ||
+                            DayJs(dividende.dateExDividende).isSame(DayJs())
+                          : !0,
+                      )
+                      .filter((dividende) =>
                         SearchSymbolStore.val !== ''
-                          ? dividende.Symbol.toLowerCase().includes(
-                              SearchSymbolStore.val.toLowerCase(),
-                            )
+                          ? dividende.stockSymbol
+                              .toLowerCase()
+                              .includes(SearchSymbolStore.val.toLowerCase())
                           : !0,
                       )
                       .filter((dividende) =>
                         SearchExDivStore.val !== ''
-                          ? dayjs(dividende.Date_ExDiv as string).format(
+                          ? DayJs(dividende.dateExDividende).format(
                               'YYYY-MM-DD',
-                            ) === SearchExDivStore.val
+                            ) ===
+                            DayJs(SearchExDivStore.val).format('YYYY-MM-DD')
                           : !0,
                       )
                       .filter((dividende) =>
                         SearchAnnualDivStore.val !== 0
-                          ? dividende.Dividende >= SearchAnnualDivStore.val
+                          ? dividende.dividendePerShare >=
+                            SearchAnnualDivStore.val
                           : !0,
                       )
                       // sort by DivAnnuel and ExDiv
                       .sort(
                         (a, b) =>
-                          (a.Dividende as number) -
-                          (b.Dividende as number) +
-                          dayjs(a.Date_ExDiv as string).unix() -
-                          dayjs(b.Date_ExDiv as string).unix(),
+                          (a.dividendePerShare as number) -
+                          (b.dividendePerShare as number) +
+                          DayJs(a.dateExDividende).unix() -
+                          DayJs(b.dateExDividende).unix(),
                       )
                       .map((dividende) => (
                         <DividendeCalendar
                           key={
-                            dividende._id
-                              ? String(dividende._id)
+                            dividende.id
+                              ? String(dividende.id)
                               : String(Math.random() * 1000)
                           }
                           {...dividende}
@@ -124,46 +130,38 @@ const Dividende: FC = (): JSX.Element => {
     );
     const RefetchStore = refetchStore((state: StateRefetch) => state.fn);
 
-    const { data, isSuccess } = useQuery<DividendeType[]>({
-      queryKey: ['dividende', BuyDividendeStore.buy],
-      queryFn: (): Promise<DividendeType[]> =>
-        axiosInstance
-          .get(`/dividende/${BuyDividendeStore.buy}`)
-          .then((res) => res.data),
+    const { data, isSuccess } = useQuery<DividendeType>({
+      queryKey: ['Dividende', BuyDividendeStore.buy],
+      queryFn: ({ queryKey }) => getOneDividende(queryKey[1] as string),
       onError: (err) => console.log(err),
     });
 
-    const createBuy = useMutation({
+    const createBuyMutation = useMutation({
       mutationKey: ['createBuy'],
-      mutationFn: (data: CreateBuyType): Promise<BuyType> =>
-        axiosInstance.post(`/buys`, data).then((res) => res.data),
+      mutationFn: createBuy,
       onSuccess: () => {
         RefetchStore();
       },
     });
 
-    const [StockPrice, setStockPrice] = useState(0);
-    const [StockPriceDate, setStockPriceDate] = useState('');
-    const [Montant, setMontant] = useState(0);
+    const [StockPrice, setStockPrice] = useState<number>(
+      isSuccess ? (data.stock.price as number) : 0,
+    );
+    const [Montant, setMontant] = useState<number>(0);
 
     const handleCancel = () => {
       BuyDividendeStore.set('');
     };
 
     const handleBuyDividende = () => {
-      var dataForm: CreateBuyType = {
-        Symbol: (data as DividendeType[])[0].Symbol,
-        Date_ExDiv: (data as DividendeType[])[0].Date_ExDiv,
-        Date_Paiement: (data as DividendeType[])[0].Date_Paiement,
-        Dividende: (data as DividendeType[])[0].Dividende,
-        Open: !0,
-        Stock_Price: StockPrice,
-        Stock_Price_Date: dayjs(StockPriceDate).format(),
-        Montant: Montant,
-      };
-
-      if (isSuccess && dataForm) {
-        createBuy.mutate(dataForm);
+      if (isSuccess) {
+        var dataForm: BuyCreate = {
+          dividendeId: data.id,
+          date: DayJs().format('YYYY-MM-DDTHH:mm:ssZ[Z]'),
+          price: StockPrice,
+          amount: Montant,
+        };
+        createBuyMutation.mutate(dataForm);
       }
       handleCancel();
     };
@@ -176,56 +174,41 @@ const Dividende: FC = (): JSX.Element => {
       setMontant(Number(e.target.value));
     };
 
-    const handleChangeStockPriceDate = (
-      e: React.ChangeEvent<HTMLInputElement>,
-    ) => {
-      var value = e.target.value.split('/');
-      setStockPriceDate(`${value[2]}-${value[1]}-${value[0]}`);
-    };
+    const DayJs_Date_Paiement = isSuccess ? DayJs(data.datePaiement) : DayJs();
 
     return (
       <div className="col-span-1 row-span-2 bg-slate-800 rounded-lg shadow-lg py-4 px-2">
         <Suspense fallback={<div>Loading...</div>}>
-          {isSuccess && data.length > 0 ? (
+          {isSuccess ? (
             <div className="flex flex-col justify-between h-full">
               <div>
                 <p className="text-center text-2xl sm:text-3xl font-extrabold tracking-tight mb-4">
-                  Buy {data[0].Symbol} stock
+                  Buy {data.stockSymbol} stock
                 </p>
                 <p className="text-lg">
                   {`${
-                    data[0].Symbol
+                    data.stockSymbol
                   } is a stock that is currently dividende at ${
-                    data[0].Dividende
-                  }$ per share. ${
-                    dayjs(StockPriceDate as string).isBefore(
-                      dayjs(data[0].Date_ExDiv as string),
-                    )
-                      ? `If you buy for 100$ you will get ${
-                          StockPrice
-                            ? String(
-                                (
-                                  (Montant / StockPrice) *
-                                  (data[0].Dividende as number) *
-                                  0.7
-                                ).toFixed(2),
-                              )
-                            : ''
-                        }$ dividend (30% tax)${
-                          dayjs(data[0].Date_Paiement as string).format(
-                            'DD/MM/YYYY',
-                          ) === 'Invalid Date'
-                            ? '.'
-                            : `, le ${dayjs(
-                                data[0].Date_Paiement as string,
-                              ).format('DD/MM/YYYY')}`
-                        }`
-                      : ''
+                    data.dividendePerShare
+                  }$ per share. If you buy for ${Montant}$ you will get ${
+                    StockPrice
+                      ? String(
+                          (
+                            (Montant / StockPrice) *
+                            (data.dividendePerShare as number) *
+                            0.7
+                          ).toFixed(2),
+                        )
+                      : '0'
+                  }$ dividend (30% tax)${
+                    DayJs_Date_Paiement.format('DD/MM/YYYY') === 'Invalid Date'
+                      ? '.'
+                      : `, le ${DayJs_Date_Paiement.format('DD/MM/YYYY')}.`
                   }`}
                 </p>
               </div>
 
-              <div className="inline-flex w-full justify-center gap-x-3 px-4">
+              <div className="inline-flex w-3/4 mx-auto justify-center gap-x-3 px-4">
                 <Input
                   type="number"
                   name="Stock Price"
@@ -239,14 +222,6 @@ const Dividende: FC = (): JSX.Element => {
                   callback={handleChangeMontant}
                 >
                   <MoneyIcon {...propsSvg} />
-                </Input>
-                <Input
-                  type="text"
-                  name="Date d'achat"
-                  callback={handleChangeStockPriceDate}
-                  defaultValue={StockPriceDate}
-                >
-                  <ClockIcon {...propsSvg} />
                 </Input>
               </div>
 
@@ -281,10 +256,7 @@ const Dividende: FC = (): JSX.Element => {
             <Input
               name="Search by ex-dividende"
               type="text"
-              callback={(e) => {
-                var value = e.target.value.split('/');
-                SearchExDivStore.set(`${value[2]}-${value[1]}-${value[0]}`);
-              }}
+              callback={(e) => SearchExDivStore.set(e.target.value)}
               defaultValue={SearchExDivStore.val}
             >
               <SearchIcon {...propsSvg} />
@@ -298,11 +270,13 @@ const Dividende: FC = (): JSX.Element => {
             >
               <SearchIcon {...propsSvg} />
             </Input>
-            <Button callback={() => {
-              SearchSymbolStore.set('');
-              SearchExDivStore.set('');
-              SearchAnnualDivStore.set(0);
-            }}>
+            <Button
+              callback={() => {
+                SearchSymbolStore.set('');
+                SearchExDivStore.set('');
+                SearchAnnualDivStore.set(0);
+              }}
+            >
               <TrashIcon {...propsSvg} />
             </Button>
           </div>
