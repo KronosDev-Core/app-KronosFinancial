@@ -1,25 +1,24 @@
 /* ------------------ Rework Types for Fastify ------------------ */
 
 import { Dayjs } from 'dayjs';
-import { deprecate } from 'util';
 
 // Default
 export enum Status {
-  'NEW',
-  'UPDATED',
-  'NOT_CHANGED',
+  New = 'NEW',
+  Updated = 'UPDATED',
+  NotChanged = 'NOT_CHANGED',
 }
 
 interface ID {
-  id: String | string;
+  id: string;
 }
 
 // Stock
 export interface Stock extends ID {
-  symbol: String | string;
-  name: String | string;
-  sector: String | string;
-  price: Number | number;
+  symbol: string;
+  name: string;
+  sector: string;
+  price: number;
   status: Status;
   dividende: Dividende[];
 }
@@ -28,21 +27,14 @@ export interface StockCreate
   extends Omit<Stock, 'id' | 'status' | 'dividende'> {}
 
 export interface StockUpdate
-  extends Omit<
-    Stock,
-    'id' | 'symbol' | 'name' | 'sector' | 'price' | 'status' | 'dividende'
-  > {
-  name?: String | string;
-  sector?: String | string;
-  price?: Number | number;
-}
+  extends Partial<Omit<Stock, 'id' | 'symbol' | 'status' | 'dividende'>> {}
 
 export interface Dividende extends ID {
-  dateExDividende: String | string;
-  datePaiement: String | string;
-  dividendePerShare: Number | number;
+  dateExDividende: string;
+  datePaiement: string;
+  dividendePerShare: number;
   status: Status;
-  stockSymbol: String | string;
+  stockSymbol: string;
   stock: Stock;
   buy: Buy[];
 }
@@ -51,61 +43,38 @@ export interface DividendeCreate
   extends Omit<Dividende, 'id' | 'status' | 'stock' | 'buy'> {}
 
 export interface DividendeUpdate
-  extends Omit<
-    Dividende,
-    | 'id'
-    | 'dateExDividende'
-    | 'datePaiement'
-    | 'dividendePerShare'
-    | 'status'
-    | 'stockSymbol'
-    | 'stock'
-    | 'buy'
-  > {
-  dateExDividende?: String | string;
-  datePaiement?: String | string;
-  dividendePerShare?: Number | number;
-}
+  extends Partial<
+    Omit<Dividende, 'id' | 'status' | 'stockSymbol' | 'stock' | 'buy'>
+  > {}
 
 // Buy
 export interface Buy extends ID {
-  date: String | string;
-  price: Number | number;
-  amount: Number | number;
+  date: string;
+  price: number;
+  amount: number;
   dividende: Dividende;
-  dividendeId: String | string;
+  dividendeId: string;
   sell: Sell | null;
 }
 
 export interface BuyCreate extends Omit<Buy, 'id' | 'dividende' | 'sell'> {}
 
 export interface BuyUpdate
-  extends Omit<
-    Buy,
-    'id' | 'date' | 'price' | 'amount' | 'dividende' | 'dividendeId' | 'sell'
-  > {
-  date?: String | string;
-  price?: Number | number;
-  amount?: Number | number;
-  dividendeId?: String | string;
-}
+  extends Partial<Omit<Buy, 'id' | 'dividende' | 'sell'>> {}
 
 // Sell
 export interface Sell extends ID {
-  date: String | string;
-  price: Number | number;
-  buyId: String | string;
+  date: string;
+  price: number;
+  buyId: string;
   buy: Buy;
 }
 
 export interface SellCreate extends Omit<Sell, 'id' | 'buy'> {}
 
-export interface SellUpdate
-  extends Omit<Sell, 'id' | 'date' | 'price' | 'buyId' | 'buy'> {
-  date?: String | string;
-  price?: Number | number;
-  buyId?: String | string;
-}
+export interface SellUpdate extends Partial<Omit<Sell, 'id' | 'buy'>> {}
+
+// each function in Dayjs is also available in DayJs and return DayJs type
 
 export interface DayJs extends Dayjs {
   /**
@@ -193,4 +162,25 @@ export interface DayJs extends Dayjs {
    *  ```
    */
   isHoliday: () => [DayJs[]];
+
+  
+  add(value: number, unit?: string): DayJs;
+  subtract(value: number, unit?: string): DayJs;
+  startOf(unit: string): DayJs;
+  endOf(unit: string): DayJs;
+  format(format: string): string;
+  month(): number;
+  month(value: number): DayJs;
+  year(): number;
+  year(value: number): DayJs;
+}
+
+export interface FinnhubQuote {
+  c: number;
+  d: number;
+  dp: number;
+  h: number;
+  l: number;
+  o: number;
+  pc: number;
 }

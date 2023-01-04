@@ -3,13 +3,14 @@ import {
   createBrowserRouter,
   Navigate,
   Outlet,
-  redirect,
   RouterProvider,
 } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import Error from '@Components/Template/error';
-import App from '@Local/app';
+import App from '@Local/pages/app';
+import Calendar from '@Local/pages/calendar';
+import Stock from '@Local/pages/stock';
 
 const Core: FC = (): JSX.Element => {
   const router = createBrowserRouter([
@@ -28,11 +29,11 @@ const Core: FC = (): JSX.Element => {
         },
         {
           path: 'calendar',
-          element: <></>,
+          element: <Calendar />,
         },
         {
           path: 'stock',
-          element: <></>,
+          element: <Stock />,
           children: [
             {
               path: ':id',

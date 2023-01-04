@@ -21,6 +21,7 @@
       "@Template/*": ["components/template/*"],
       "@SVG/*": ["assets/Svg/*"],
       "@Types/*": ["types/*"],
+      "@Context/*": ["context/*"],
       "@Local/*": ["*"],
     },
     "sourceMap": true

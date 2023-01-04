@@ -1,14 +1,12 @@
-import { FC, Suspense, SVGProps, useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { FC, Suspense, SVGProps, useEffect, useState } from 'react';
+import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
+import { useInView } from 'react-intersection-observer';
 
 import DayJs from '@Local/utils/DayJs';
-import DividendeCalendar from '@Components/Dividende/DividendeCalendar';
-import Input from '@Components/Template/input';
 import SearchIcon from '@SVG/Search';
 import buyDividendeStore, {
   StateBuyDividende,
 } from '@Local/context/BuyDividende';
-import Button from '@Components/Template/button';
 import TradingUpIcon from '@SVG/TradingUp';
 import MoneyIcon from '@SVG/Money';
 import refetchStore, { StateRefetch } from '@Local/context/Refetch';
@@ -23,6 +21,10 @@ import TrashIcon from '@SVG/Trash';
 import { getAllDividendes, getOneDividende } from '@Local/api/dividende';
 import { BuyCreate, Dividende as DividendeType } from '@Types/index';
 import { createBuy } from '@Local/api/buy';
+import searchStore, { StateSearch } from '@Local/context/Search';
+import DividendeCalendar from './DividendeCalendar';
+import Input from '@Components/Template/input';
+import Button from '@Components/Template/button';
 
 const Dividende: FC = (): JSX.Element => {
   const BuyDividendeStore = buyDividendeStore(
@@ -32,18 +34,52 @@ const Dividende: FC = (): JSX.Element => {
     SearchExDivStore = searchExDivStore((state: StateSearchExDiv) => state),
     SearchAnnualDivStore = searchAnnualDivStore(
       (state: StateSearchAnnualDiv) => state,
-    );
+    ),
+    SearchStore = searchStore((state: StateSearch) => state);
 
   var propsSvg: SVGProps<SVGSVGElement> = {
     className: 'w-5 h-5 fill-slate-200',
   };
 
   const HeaderDividendeList: FC = (): JSX.Element => {
-    const { data, isSuccess } = useQuery<DividendeType[]>({
+    const { ref, inView } = useInView();
+
+    const { data, isSuccess, fetchNextPage, refetch } = useInfiniteQuery({
       queryKey: ['dividendes'],
-      queryFn: getAllDividendes,
+      queryFn: ({ pageParam }) =>
+        getAllDividendes({
+          pageParam,
+          name:
+            SearchSymbolStore.val !== '' ? SearchSymbolStore.val : undefined,
+          dateExDividende:
+            SearchExDivStore.val !== '' ? SearchExDivStore.val : undefined,
+        }),
+      getNextPageParam: (..._) => _[1].length,
       onError: (err) => console.log(err),
+      refetchOnMount: !1,
+      refetchOnWindowFocus: !1,
+      refetchOnReconnect: !1,
+      refetchInterval: !1,
+      refetchIntervalInBackground: !1,
     });
+
+    useEffect(() => {
+      if (inView) {
+        fetchNextPage();
+      }
+    }, [inView]);
+
+    if (isSuccess) {
+      data.pages.map((page) => {
+        page.map((dividende) => console.log(dividende));
+      });
+    }
+
+    if (SearchStore.click) {
+      console.log('refetch', SearchSymbolStore.val, SearchExDivStore.val);
+      refetch();
+      SearchStore.set(!1);
+    }
 
     return (
       <div
@@ -66,56 +102,36 @@ const Dividende: FC = (): JSX.Element => {
             </thead>
             <tbody className="rounded-xl ">
               <Suspense fallback={<div>Loading...</div>}>
-                {isSuccess && data.length > 0
-                  ? data
-                      .filter((dividende) =>
-                        SearchAnnualDivStore.val === 0 &&
-                        SearchExDivStore.val === '' &&
-                        SearchSymbolStore.val === ''
-                          ? DayJs(dividende.dateExDividende).isAfter(DayJs()) ||
-                            DayJs(dividende.dateExDividende).isSame(DayJs())
-                          : !0,
-                      )
-                      .filter((dividende) =>
-                        SearchSymbolStore.val !== ''
-                          ? dividende.stockSymbol
-                              .toLowerCase()
-                              .includes(SearchSymbolStore.val.toLowerCase())
-                          : !0,
-                      )
-                      .filter((dividende) =>
-                        SearchExDivStore.val !== ''
-                          ? DayJs(dividende.dateExDividende).format(
-                              'YYYY-MM-DD',
-                            ) ===
-                            DayJs(SearchExDivStore.val).format('YYYY-MM-DD')
-                          : !0,
-                      )
-                      .filter((dividende) =>
-                        SearchAnnualDivStore.val !== 0
-                          ? dividende.dividendePerShare >=
-                            SearchAnnualDivStore.val
-                          : !0,
-                      )
-                      // sort by DivAnnuel and ExDiv
-                      .sort(
-                        (a, b) =>
-                          (a.dividendePerShare as number) -
-                          (b.dividendePerShare as number) +
-                          DayJs(a.dateExDividende).unix() -
-                          DayJs(b.dateExDividende).unix(),
-                      )
-                      .map((dividende) => (
-                        <DividendeCalendar
-                          key={
-                            dividende.id
-                              ? String(dividende.id)
-                              : String(Math.random() * 1000)
-                          }
-                          {...dividende}
-                        />
-                      ))
+                {isSuccess && data.pages.length > 0
+                  ? data.pages.map((page) =>
+                      page
+                        .sort(
+                          (a, b) =>
+                            (a.dividendePerShare as number) -
+                            (b.dividendePerShare as number) +
+                            DayJs(a.dateExDividende).unix() -
+                            DayJs(b.dateExDividende).unix(),
+                        )
+                        .map((dividende) => (
+                          <DividendeCalendar
+                            key={
+                              dividende.id
+                                ? String(dividende.id)
+                                : String(Math.random() * 1000)
+                            }
+                            {...dividende}
+                          />
+                        )),
+                    )
                   : null}
+                <tr
+                  ref={ref}
+                  className="text-center text-xl h-[5rem] hover:bg-slate-900 rounded-lg transition-all easy-in-out duration-300"
+                >
+                  <td>
+                    <div className="w-full h-full inline-flex justify-center"></div>
+                  </td>
+                </tr>
               </Suspense>
             </tbody>
           </table>
@@ -262,14 +278,13 @@ const Dividende: FC = (): JSX.Element => {
               <SearchIcon {...propsSvg} />
             </Input>
 
-            <Input
-              name="Search by dividend"
-              type="number"
-              callback={(e) => SearchAnnualDivStore.set(Number(e.target.value))}
-              defaultValue={SearchAnnualDivStore.val}
+            <Button
+              callback={() => {
+                SearchStore.set(!0);
+              }}
             >
               <SearchIcon {...propsSvg} />
-            </Input>
+            </Button>
             <Button
               callback={() => {
                 SearchSymbolStore.set('');
