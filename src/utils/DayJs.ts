@@ -6,6 +6,7 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 
 dayjs.extend(dayjsBusinessDays);
 dayjs.extend(isSameOrBefore);
+dayjs.locale('en');
 
 const DayJs = (date?: String): DayJsType =>
   date
