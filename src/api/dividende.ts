@@ -1,5 +1,4 @@
 import {
-  DayJs,
   Dividende as Model,
   DividendeCreate as ModelCreate,
   DividendeUpdate as ModelUpdate,
@@ -7,33 +6,31 @@ import {
 import axiosInstance from './Axios';
 
 const getAllDividendes = async ({
-  pageParam,
-  name,
-  dateExDividende,
-}: {
-  pageParam?: string;
-  name?: string;
-  dateExDividende?: string;
-}): Promise<Model[]> =>
-  await axiosInstance
-    .get(
-      pageParam ||
-        name ||
-        dateExDividende ||
-        (!pageParam && !name && !dateExDividende)
-        ? `/dividendes?${pageParam ? `cursor=${pageParam}` : 'cursor=0'}${
-            name ? '&' : ''
-          }${name ? `name=${name}` : ''}${dateExDividende ? '&' : ''}${
-            dateExDividende ? `dateExDividende=${dateExDividende}` : ''
-          }`
-        : '/dividendes',
-    )
-    .then((res) => res.data);
-
-const count = async (
-    name?: string,
-    dateExDividende?: string,
-  ): Promise<number> =>
+    pageParam,
+    name,
+    dateExDividende,
+    strict,
+  }: {
+    pageParam?: string;
+    name?: string;
+    dateExDividende?: string;
+    strict?: boolean;
+  }): Promise<Model[]> =>
+    await axiosInstance
+      .get(
+        pageParam ||
+          name ||
+          dateExDividende ||
+          (!pageParam && !name && !dateExDividende && !strict)
+          ? `/dividendes?${pageParam ? `cursor=${pageParam}` : 'cursor=0'}${
+              name ? `&name=${name}` : ''
+            }${dateExDividende ? `&dateExDividende=${dateExDividende}` : ''}${
+              strict ? `&strict=${strict}` : ''
+            }`
+          : '/dividendes',
+      )
+      .then((res) => res.data),
+  count = async (name?: string, dateExDividende?: string): Promise<number> =>
     await axiosInstance
       .get(
         name || dateExDividende
