@@ -6,6 +6,7 @@ import {
   RouterProvider,
 } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Provider } from 'jotai';
 
 import Error from '@Components/Template/error';
 import App from '@Local/pages/app';
@@ -49,7 +50,9 @@ const Core: FC = (): JSX.Element => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <Provider>
+        <RouterProvider router={router} />
+      </Provider>
     </QueryClientProvider>
   );
 };

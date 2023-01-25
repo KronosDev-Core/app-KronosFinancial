@@ -1,5 +1,14 @@
-import { PersistOptions } from 'zustand/middleware';
+/* ---- refacto Context, replace Zustand by Jotai ---- */
+import { atom } from 'jotai';
 
-export const defaultConfigStore: Omit<PersistOptions<any>, 'name'> = {
-  version: 1,
+import DayJs from '@Utils/DayJs';
+const context = {
+  calendar: {
+    date: atom<string>(DayJs().format('YYYY-MM-DD')),
+    dividende: atom<string>(''),
+  },
+  dashboard: {},
+  stock: {},
 };
+
+export default context;

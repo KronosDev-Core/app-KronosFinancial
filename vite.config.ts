@@ -56,7 +56,8 @@ export default defineConfig({
       '@Template': resolve(__dirname, './src/components/template/'), // "@Template/*": ["components/template/*"]
       '@SVG': resolve(__dirname, './src/assets/svg/'), // "@SVG/*": ["assets/svg/*"]
       '@Types': resolve(__dirname, './src/types/'), // "@Types/*": ["types/*"]
-      '@Context'  : resolve(__dirname, './src/context/'), // "@Context/*": ["context/*"]
+      '@Context': resolve(__dirname, './src/context/'), // "@Context/*": ["context/*"]
+      '@Utils': resolve(__dirname, './src/utils/'), // "@Utils/*": ["utils/*"]
       '@Local': resolve(__dirname, './src/'), // "@Local/*": ["*"]
     },
   },

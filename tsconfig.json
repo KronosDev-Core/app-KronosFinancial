@@ -22,6 +22,7 @@
       "@SVG/*": ["assets/Svg/*"],
       "@Types/*": ["types/*"],
       "@Context/*": ["context/*"],
+      "@Utils/*": ["utils/*"],
       "@Local/*": ["*"],
     },
     "sourceMap": true
