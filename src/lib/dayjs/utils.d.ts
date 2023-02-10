@@ -1,0 +1,10 @@
+import type { Dayjs } from './dayjs';
+import type { Mutable } from 'utility-types';
+export declare const mutable: <T>(val: T) => Mutable<T>;
+export declare const pick: <T extends Record<any, unknown>, K extends keyof T>(object: T, keys: K[]) => Pick<T, K>;
+export declare const cloneDate: (date: Date) => Date;
+export declare const padZoneStr: (utcOffset: number) => string;
+export declare const monthDiff: (a: Dayjs, b: Dayjs) => number;
+export declare const absFloor: (n: number) => number;
+export declare const abs: (n: number) => number;
+export declare const isEmptyObject: (value: unknown) => value is object;

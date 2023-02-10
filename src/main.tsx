@@ -2,10 +2,10 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 
-import Core from '@Components/Core';
+import Layout from 'route/layout';
 
 createRoot(document.getElementById('root') as HTMLElement).render(
   <StrictMode>
-    <Core />
+    <Layout />
   </StrictMode>,
 );

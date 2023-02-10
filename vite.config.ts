@@ -5,7 +5,6 @@ import basicSsl from '@vitejs/plugin-basic-ssl';
 import { splitVendorChunkPlugin, defineConfig } from 'vite';
 
 import { setDefaultResultOrder } from 'node:dns';
-import { resolve } from 'node:path';
 import { readFileSync } from 'node:fs';
 
 setDefaultResultOrder('verbatim');
@@ -50,15 +49,4 @@ export default defineConfig({
     splitVendorChunkPlugin(),
     basicSsl(),
   ],
-  resolve: {
-    alias: {
-      '@Components': resolve(__dirname, './src/components/'), // "@Components/*": ["components/*"]
-      '@Template': resolve(__dirname, './src/components/template/'), // "@Template/*": ["components/template/*"]
-      '@SVG': resolve(__dirname, './src/assets/svg/'), // "@SVG/*": ["assets/svg/*"]
-      '@Types': resolve(__dirname, './src/types/'), // "@Types/*": ["types/*"]
-      '@Context': resolve(__dirname, './src/context/'), // "@Context/*": ["context/*"]
-      '@Utils': resolve(__dirname, './src/utils/'), // "@Utils/*": ["utils/*"]
-      '@Local': resolve(__dirname, './src/'), // "@Local/*": ["*"]
-    },
-  },
 });
