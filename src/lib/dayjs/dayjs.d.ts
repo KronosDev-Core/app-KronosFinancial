@@ -1,0 +1,66 @@
+import type { GetUnit, Unit, UnitBase } from './units';
+import type { Locale } from './locale';
+import type { DateInput, DayjsFn, Extend, ParseOptions, Plugin, PluginOption } from './types';
+declare type GetterFn = {
+    (value: number): Dayjs;
+    (): number;
+};
+declare const parseLocale: (preset?: string | Locale, installOnly?: boolean, newLocale?: Locale) => string;
+export { parseLocale as locale };
+declare const Dayjs_base: Extend;
+export declare class Dayjs extends Dayjs_base {
+    /** Date object */
+    private _d;
+    private _options;
+    private _year;
+    private _month;
+    private _date;
+    private _hour;
+    private _minute;
+    private _second;
+    private _millisecond;
+    /** Day of week */
+    private _day;
+    private _locale;
+    year: GetterFn;
+    month: GetterFn;
+    date: GetterFn;
+    hour: GetterFn;
+    minute: GetterFn;
+    second: GetterFn;
+    millisecond: GetterFn;
+    day: GetterFn;
+    constructor(date: Exclude<DateInput, Dayjs>, options?: ParseOptions);
+    parse(date: Exclude<DateInput, Dayjs>): void;
+    private _init;
+    valueOf(): number;
+    unix(): number;
+    isValid(): boolean;
+    private _startEndOf;
+    $locale(): Locale;
+    locale(): string;
+    locale(preset: string | Locale, locale?: Locale): Dayjs;
+    startOf(unit: Unit): Dayjs;
+    endOf(unit: Unit): Dayjs;
+    isSame(that?: DateInput, unit?: Unit): boolean;
+    isAfter(that?: DateInput, unit?: Unit): boolean;
+    isBefore(that?: DateInput, unit?: Unit): boolean;
+    clone(): Dayjs;
+    get(unit: UnitBase | 'day'): number;
+    set(unit: UnitBase | 'day', value: number): Dayjs;
+    daysInMonth(): number;
+    toDate(): Date;
+    toJSON(): string | null;
+    toISOString(): string;
+    toString(): string;
+    utcOffset(): number;
+    format(formatStr?: string): string;
+    add(number: number, unit: Exclude<Unit, GetUnit<'D'>>): Dayjs;
+    subtract(number: number, unit: Exclude<Unit, GetUnit<'D'>>): Dayjs;
+    diff(input: DateInput, units: Exclude<Unit, GetUnit<'D' | 'ms'>>, float: boolean): number;
+}
+export declare const isDayjs: (value: unknown) => value is Dayjs;
+export declare const unix: (timestamp: number) => Dayjs;
+export declare const extend: <P extends Plugin<any>>(plugin: P, option?: PluginOption<P> | undefined) => DayjsFn;
+export declare const dayjs: DayjsFn;
+export default dayjs;

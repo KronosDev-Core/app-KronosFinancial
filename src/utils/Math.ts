@@ -1,23 +1,17 @@
-const add = (a: number | Number, b: number | Number): number =>
-  ((a as number) + (b as number)) as number;
+const { ceil, abs, sqrt } = Math,
+  add = (a: number, b: number): number => a + b,
+  sub = (a: number, b: number): number => a - b,
+  mul = (a: number, b: number): number => a * b,
+  div = (a: number, b: number): number => a / b,
+  Abs = (a: number): number => abs(a),
+  Sqrt = (a: number): number => sqrt(a),
+  pow = (a: number, b: number): number => a ** b,
+  dividend = (
+    amount: number,
+    price: number,
+    dividendePerShare: number,
+  ): number => mul(mul(div(amount, price), dividendePerShare), 0.7),
+  roundUp = (value: number, decimal: number): number =>
+    ceil(mul(value, pow(10, decimal))) / pow(10, decimal);
 
-const sub = (a: number | Number, b: number | Number): number =>
-  ((a as number) - (b as number)) as number;
-
-const mul = (a: number | Number, b: number | Number): number =>
-  ((a as number) * (b as number)) as number;
-
-const div = (a: number | Number, b: number | Number): number =>
-  ((a as number) / (b as number)) as number;
-
-const dividendeFormule = (
-  amount: number | Number,
-  price: number | Number,
-  dividendePerShare: number | Number,
-): number => mul(mul(div(amount, price), dividendePerShare), 0.7) as number;
-
-const roundUp = (value: number | Number, decimals: number | Number): number =>
-  Math.ceil((value as number) * 10 ** (decimals as number)) /
-  10 ** (decimals as number);
-
-export { dividendeFormule, add, sub, mul, div, roundUp };
+export { add, sub, mul, div, Abs, Sqrt, pow, dividend, roundUp };

@@ -1,17 +1,11 @@
-import dayjs from 'dayjs';
-// @ts-ignore
-import dayjsBusinessDays from 'dayjs-business-days';
-import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import dayjs, { Dayjs } from 'lib/dayjs';
+import 'lib/dayjs/locale/en';
+import businessDays from 'lib/dayjs/plugin/businessDays';
 
-import { DayJs as DayJsType } from '@Types/index';
-
-dayjs.extend(dayjsBusinessDays);
-dayjs.extend(isSameOrBefore);
+dayjs.extend(businessDays);
 dayjs.locale('en');
 
-const DayJs = (date?: String): DayJsType =>
-  date
-    ? (dayjs(date.split('/').reverse().join('-') as string) as DayJsType)
-    : (dayjs() as DayJsType);
+const DayJs = (date?: String): Dayjs =>
+  date ? dayjs(date.split('/').reverse().join('-')) : dayjs();
 
 export default DayJs;
