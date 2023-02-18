@@ -1,16 +1,16 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { FC, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useAtom } from 'jotai';
 
-import AppStore from 'route/app/(store)';
-import { getAllDividends } from 'lib/api/dividend';
-import dayjs from 'utils/DayJs';
-import Loader from 'route/(components)/loader';
-import { Dividend } from 'types';
+import AppStore from '@Store/index';
+import { getAllDividends } from '@Lib/api/dividend';
+import Loader from '@Components/loader';
+import DayJs from '@Utils/DayJs';
+import { Dividend } from '@Types/index';
 import DividendItem from './(components)/DividendItem';
 
-const ListContainer: FC = (): JSX.Element => {
+export default function ListContainer() {
   const { inView } = useInView();
   const [calendarDate] = useAtom(AppStore.calendar.date);
   const [calendarDividend, setCalendarDividend] = useAtom(
@@ -40,7 +40,7 @@ const ListContainer: FC = (): JSX.Element => {
   return (
     <div className="row-span-4 col-span-2 bg-slate-800 rounded-lg grid grid-rows-[repeat(8,_minmax(0,_1fr))] grid-cols-1 p-4">
       <div className="text-2xl text-center row-span-1 my-auto">
-        {dayjs(calendarDate).format('MMMM D, YYYY')}
+        {DayJs(calendarDate).format('MMMM D, YYYY')}
       </div>
 
       <div className="row-[span_7_/_span_7] grid grid-cols-1 grid-rows-1 overflow-y-auto">
@@ -53,8 +53,8 @@ const ListContainer: FC = (): JSX.Element => {
                     (a, b) =>
                       a.dividendPerShare -
                       b.dividendPerShare +
-                      dayjs(a.dateExDividend).unix() -
-                      dayjs(b.dateExDividend).unix(),
+                      DayJs(a.dateExDividend).unix() -
+                      DayJs(b.dateExDividend).unix(),
                   )
                   .map((dividend: Dividend) => {
                     if (calendarDividend === '' && !dividendSet.current) {
@@ -69,6 +69,4 @@ const ListContainer: FC = (): JSX.Element => {
       </div>
     </div>
   );
-};
-
-export default ListContainer;
+}

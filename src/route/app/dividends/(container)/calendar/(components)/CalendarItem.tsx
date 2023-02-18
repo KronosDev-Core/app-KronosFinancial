@@ -2,19 +2,19 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import { useAtom } from 'jotai';
 
-import AppStore from 'route/app/(store)';
-import Loader from 'route/(components)/loader';
-import { Dayjs } from 'lib/dayjs';
-import { getAllDividends } from 'lib/api/dividend';
-import { Dividend } from 'types';
-import dayjs from 'utils/DayJs';
-import { div, mul, sub } from 'utils/Math';
+import { Dayjs } from '@Lib/dayjs';
+import AppStore from '@Store/index';
+import { Dividend } from '@Types/index';
+import { getAllDividends } from '@Lib/api/dividend';
+import DayJs from '@Utils/DayJs';
+import Loader from '@Components/loader';
+import { div, mul, sub } from '@Utils/Math';
 
 interface CalendarItemProps {
   date: Dayjs;
 }
 
-const CalendarItem = ({ date }: CalendarItemProps) => {
+export default function CalendarItem({ date }: CalendarItemProps) {
   const [, setCalendarDate] = useAtom(AppStore.calendar.date);
 
   const { data, isSuccess, isFetching } = useQuery<Dividend[]>({
@@ -48,7 +48,7 @@ const CalendarItem = ({ date }: CalendarItemProps) => {
       className={
         'bg-slate-900 rounded-lg w-full h-full p-2 gap-y-2 flex flex-col justify-start transition-all duration-300 ease-in-out hover:z-10 z-0 ' +
         (isFetching ? 'cursor-wait' : 'cursor-pointer') +
-        (dayjs().isSame(date, 'day')
+        (DayJs().isSame(date, 'day')
           ? ' hover:ring-4 ring-2 ring-offset-2 ring-offset-slate-500/50 hover:ring-slate-900 ring-slate-800'
           : ' hover:ring-4 ring-offset-2 ring-offset-slate-800 ring-slate-900')
       }
@@ -99,6 +99,4 @@ const CalendarItem = ({ date }: CalendarItemProps) => {
       </div>
     </div>
   );
-};
-
-export default CalendarItem;
+}

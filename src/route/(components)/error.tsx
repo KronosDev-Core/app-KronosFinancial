@@ -1,7 +1,6 @@
-import { FC } from 'react';
 import { useRouteError } from 'react-router-dom';
 
-const Error: FC = (): JSX.Element => {
+export default function Error() {
   const error: any = useRouteError();
   console.error(error);
 
@@ -14,6 +13,4 @@ const Error: FC = (): JSX.Element => {
       </p>
     </div>
   );
-};
-
-export default Error;
+}

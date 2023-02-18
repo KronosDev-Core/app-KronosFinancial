@@ -1,21 +1,20 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useAtom } from 'jotai';
-import { FC } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import z from 'zod';
 
-import AppStore from 'route/app/(store)';
-import { Dividend } from 'types';
-import { getOneDividend } from 'lib/api/dividend';
-import dayjs from 'utils/DayJs';
-import { createBuy } from 'lib/api/buy';
-import Loader from 'route/(components)/loader';
-import Input from 'route/(components)/input';
-import CompanyIcon from 'assets/icons/Company';
-import ShopIcon from 'assets/icons/Shop';
-import MoneyIcon from 'assets/icons/Money';
-import Button from 'route/(components)/button';
+import AppStore from '@Store/index';
+import { Dividend } from '@Types/index';
+import { getOneDividend } from '@Lib/api/dividend';
+import DayJs from '@Utils/DayJs';
+import { createBuy } from '@Lib/api/buy';
+import Loader from '@Components/loader';
+import Input from '@Components/input';
+import CompanyIcon from '@Assets/icons/Company';
+import ShopIcon from '@Assets/icons/Shop';
+import MoneyIcon from '@Assets/icons/Money';
+import Button from '@Components/button';
 
 const schema = z
   .object({
@@ -26,7 +25,7 @@ const schema = z
   })
   .required();
 
-const FormContainer: FC = (): JSX.Element => {
+export default function FormContainer() {
   const [calendarDividend] = useAtom(AppStore.calendar.dividend);
 
   const {
@@ -52,7 +51,7 @@ const FormContainer: FC = (): JSX.Element => {
     onError: (error) => console.log(error),
     onSuccess: (data) => {
       setValue('company', data.stock.name);
-      setValue('date', dayjs().format('YYYY-MM-DD'));
+      setValue('date', DayJs().format('YYYY-MM-DD'));
       setValue('amount', 100);
       setValue('price', data.stock.price);
     },
@@ -68,7 +67,7 @@ const FormContainer: FC = (): JSX.Element => {
   const resetForm = () =>
     reset({
       company: data?.stock.name || '',
-      date: dayjs().format('YYYY-MM-DD') || '',
+      date: DayJs().format('YYYY-MM-DD') || '',
       amount: 100,
       price: data?.stock.price || 0,
     });
@@ -114,9 +113,9 @@ const FormContainer: FC = (): JSX.Element => {
                     )
                   : '0'
               } dividend (30% tax)${
-                dayjs(watch('date')).format('YYYY-MM-DD') === 'Invalid Date'
+                DayJs(watch('date')).format('YYYY-MM-DD') === 'Invalid Date'
                   ? '.'
-                  : ` on ${dayjs(watch('date')).format('YYYY-MM-DD')}.`
+                  : ` on ${DayJs(watch('date')).format('YYYY-MM-DD')}.`
               }`}
             </p>
           </div>
@@ -174,6 +173,4 @@ const FormContainer: FC = (): JSX.Element => {
       )}
     </div>
   );
-};
-
-export default FormContainer;
+}

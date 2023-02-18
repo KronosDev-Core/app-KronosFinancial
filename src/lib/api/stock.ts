@@ -2,9 +2,8 @@ import {
   Stock as Model,
   StockCreate as ModelCreate,
   StockUpdate as ModelUpdate,
-} from '../../types';
-
-const axiosInstance = (await import('.')).default.base.axiosInstance;
+} from '@Types/index';
+import { axiosInstance } from './axios';
 
 const getAllStocks = async (): Promise<Model[]> =>
     await axiosInstance.get('/stocks').then((res) => res.data),

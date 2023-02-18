@@ -1,10 +1,10 @@
 import { useAtom } from 'jotai';
 
-import AppStore from 'route/app/(store)';
-import { Dividend } from 'types';
-import dayjs from 'utils/DayJs';
+import { Dividend } from '@Types/index';
+import AppStore from '@Store/index';
+import DayJs from '@Utils/DayJs';
 
-const DividendItem = ({ item }: { item: Dividend }) => {
+export default function DividendItem({ item }: { item: Dividend }) {
   const [calendarDividend, setCalendarDividend] = useAtom(
     AppStore.calendar.dividend,
   );
@@ -38,7 +38,7 @@ const DividendItem = ({ item }: { item: Dividend }) => {
         <div className="w-1 h-[90%] bg-slate-800 rounded-lg col-span-1 mx-1" />
         <div className="col-span-1 grid grid-cols-1 grid-rows-5 justify-center items-center h-full w-full">
           <p className="text-lg row-span-2 row-start-2 text-center">
-            {dayjs(item.dateExDividend).format('DD/MM/YYYY')}
+            {DayJs(item.dateExDividend).format('DD/MM/YYYY')}
           </p>
           <p className="text-sm italic row-span-1 row-start-4 text-clip text-center">
             date Ex-Dividend
@@ -54,6 +54,4 @@ const DividendItem = ({ item }: { item: Dividend }) => {
       </div>
     </div>
   );
-};
-
-export default DividendItem;
+}

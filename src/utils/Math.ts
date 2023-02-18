@@ -9,8 +9,8 @@ const { ceil, abs, sqrt } = Math,
   dividend = (
     amount: number,
     price: number,
-    dividendePerShare: number,
-  ): number => mul(mul(div(amount, price), dividendePerShare), 0.7),
+    dividendPerShare: number,
+  ): number => mul(mul(div(amount, price), dividendPerShare), 0.7),
   roundUp = (value: number, decimal: number): number =>
     ceil(mul(value, pow(10, decimal))) / pow(10, decimal);
 

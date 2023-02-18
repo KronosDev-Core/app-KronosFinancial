@@ -2,9 +2,8 @@ import {
   Sell as Model,
   SellCreate as ModelCreate,
   SellUpdate as ModelUpdate,
-} from '../../types';
-
-const axiosInstance = (await import('.')).default.base.axiosInstance;
+} from '@Types/index';
+import { axiosInstance } from './axios';
 
 const getAllSells = async (): Promise<Model[]> =>
     await axiosInstance.get('/sells').then((res) => res.data),

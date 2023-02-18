@@ -1,4 +1,27 @@
-## [2.0.3]() 02-10-2023
+## [2.0.4]() 02-18-2023
+
+### Features
+
+- 
+
+### Performance improvement
+
+-
+
+### Improvement
+
+- i18n of code, Texts, ... (dividende => dividend)
+- Undo `remove all alias (@.../\*), is not working in linux environnement`\
+- Chores: Update deps
+- Clean code
+
+### Bugs fixes
+
+- Top-Level await `const axiosInstance = (await import('...'));`
+
+<br/>
+
+## [2.0.3](https://github.com/KronosDev-Core/app-KronosFinancial/commit/30dac21ee54160127ec9c7b431ad82eba5b9ee0f) 02-10-2023
 
 ### Features
 

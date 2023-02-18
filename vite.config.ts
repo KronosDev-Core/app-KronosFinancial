@@ -1,24 +1,19 @@
-import react from '@vitejs/plugin-react';
+import react from '@vitejs/plugin-react-swc';
 import Inspect from 'vite-plugin-inspect';
-import basicSsl from '@vitejs/plugin-basic-ssl';
 
-import { splitVendorChunkPlugin, defineConfig } from 'vite';
-
-import { setDefaultResultOrder } from 'node:dns';
-import { readFileSync } from 'node:fs';
-
-setDefaultResultOrder('verbatim');
+import { defineConfig } from 'vite';
+import { resolve } from 'node:path';
 
 // https://vitejs.dev/config/
 /** @type {import('vite').UserConfig} */
 export default defineConfig({
   server: {
+    https: {
+      key: './secure/kronos.dev-key.pem',
+      cert: './secure/kronos.dev.pem',
+    },
     host: 'kronos.dev',
     port: 443,
-    https: {
-      key: readFileSync('secure/kronos.dev-key.pem', 'utf8'),
-      cert: readFileSync('secure/kronos.dev.pem', 'utf8'),
-    },
     proxy: {
       '/api': {
         target: 'https://kronos.dev:3443/',
@@ -27,26 +22,17 @@ export default defineConfig({
       },
     },
   },
-  build: {
-    watch: { include: 'src/**/*.{ts,tsx,html,css}' },
-    manifest: !0,
-    assetsDir: 'public',
-    target: ['es2021', 'chrome100', 'safari13'],
-    minify: !process.env.TAURI_DEBUG ? 'esbuild' : false,
-    sourcemap: !!process.env.TAURI_DEBUG,
+  plugins: [Inspect(), react()],
+  resolve: {
+    alias: {
+      '@Components': resolve(__dirname, './src/route/(components)/'),
+      '@Store': resolve(__dirname, './src/route/app/(store)/'),
+      '@App': resolve(__dirname, './src/route/app/'),
+      '@Web': resolve(__dirname, './src/route/web/'),
+      '@Assets': resolve(__dirname, './src/assets/'),
+      '@Types': resolve(__dirname, './src/types/'),
+      '@Utils': resolve(__dirname, './src/utils/'),
+      '@Lib': resolve(__dirname, './src/lib/'),
+    },
   },
-  plugins: [
-    Inspect(),
-    // compress({
-    //   verbose: !0,
-    //   extensions: ['js', 'css', 'ts', 'tsx', 'html'],
-    // }),
-    react({ include: 'src/**/*.{ts,tsx,html,css}' }),
-    // reactPlugin({
-    //   injectReact: !1,
-    //   removeDevtoolsInProd: !0,
-    // }),
-    splitVendorChunkPlugin(),
-    basicSsl(),
-  ],
 });
