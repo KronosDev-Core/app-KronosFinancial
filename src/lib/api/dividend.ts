@@ -1,10 +1,9 @@
 import {
-  Dividende as Model,
-  DividendeCreate as ModelCreate,
-  DividendeUpdate as ModelUpdate,
-} from '../../types';
-
-const axiosInstance = (await import('.')).default.base.axiosInstance;
+  Dividend as Model,
+  DividendCreate as ModelCreate,
+  DividendUpdate as ModelUpdate,
+} from '@Types/index';
+import { axiosInstance } from './axios';
 
 const getAllDividends = async ({
     pageParam,
@@ -23,38 +22,38 @@ const getAllDividends = async ({
           name ||
           dateExDividend ||
           (!pageParam && !name && !dateExDividend && !strict)
-          ? `/dividendes?${pageParam ? `cursor=${pageParam}` : 'cursor=0'}${
+          ? `/dividends?${pageParam ? `cursor=${pageParam}` : 'cursor=0'}${
               name ? `&name=${name}` : ''
-            }${dateExDividend ? `&dateExDividende=${dateExDividend}` : ''}${
+            }${dateExDividend ? `&dateExDividend=${dateExDividend}` : ''}${
               strict ? `&strict=${strict}` : ''
             }`
-          : '/dividendes',
+          : '/dividends',
       )
       .then((res) => res.data),
   count = async (name?: string, dateExDividend?: string): Promise<number> =>
     await axiosInstance
       .get(
         name || dateExDividend
-          ? `/dividendes/count?${name ? `name=${name}` : ''}${
+          ? `/dividends/count?${name ? `name=${name}` : ''}${
               dateExDividend ? '&' : ''
-            }${dateExDividend ? `dateExDividende=${dateExDividend}` : ''}`
-          : '/dividendes/count',
+            }${dateExDividend ? `dateExDividend=${dateExDividend}` : ''}`
+          : '/dividends/count',
       )
       .then((res) => res.data),
   getOneDividend = async (symbolOrId: string | String): Promise<Model> =>
-    await axiosInstance.get(`/dividende/${symbolOrId}`).then((res) => res.data),
+    await axiosInstance.get(`/dividend/${symbolOrId}`).then((res) => res.data),
   createDividend = async (postData: ModelCreate): Promise<Model> =>
-    await axiosInstance.post('/dividende', postData).then((res) => res.data),
+    await axiosInstance.post('/dividend', postData).then((res) => res.data),
   updateDividend = async (
     symbolOrId: string | String,
     postData: ModelUpdate,
   ): Promise<Model> =>
     await axiosInstance
-      .put(`/dividende/${symbolOrId}`, postData)
+      .put(`/dividend/${symbolOrId}`, postData)
       .then((res) => res.data),
   deleteDividend = async (symbolOrId: string | String): Promise<Model> =>
     await axiosInstance
-      .delete(`/dividende/${symbolOrId}`)
+      .delete(`/dividend/${symbolOrId}`)
       .then((res) => res.data);
 
 export {

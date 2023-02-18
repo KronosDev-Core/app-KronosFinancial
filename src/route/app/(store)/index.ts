@@ -1,9 +1,10 @@
 import { atom } from 'jotai';
-import dayjs from 'utils/DayJs';
+
+import DayJs from '@Utils/DayJs';
 
 const AppStore = {
   calendar: {
-    date: atom<string>(dayjs().format('YYYY-MM-DD')),
+    date: atom<string>(DayJs().format('YYYY-MM-DD')),
     dividend: atom<string>(''),
   },
   dashboard: {},

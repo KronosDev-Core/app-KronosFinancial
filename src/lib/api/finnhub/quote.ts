@@ -1,4 +1,4 @@
-import { FinnhubQuote } from '../../../types';
+import { FinnhubQuote } from '@Types/index';
 import { Finnhub } from './Finnhub';
 
 export const quote = async (symbol: string): Promise<FinnhubQuote> =>

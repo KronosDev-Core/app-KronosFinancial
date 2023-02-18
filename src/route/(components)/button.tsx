@@ -1,16 +1,16 @@
-import { ButtonHTMLAttributes, FC, MouseEvent } from 'react';
+import { ButtonHTMLAttributes, MouseEvent } from 'react';
 
 interface InputProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: JSX.Element | string;
   callback: (e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>) => void;
 }
 
-const Button: FC<InputProps> = ({
+export default function Button({
   name,
   children,
   callback,
   ...rest
-}: InputProps): JSX.Element => {
+}: InputProps) {
   return (
     <button
       className={
@@ -22,6 +22,4 @@ const Button: FC<InputProps> = ({
       {children}
     </button>
   );
-};
-
-export default Button;
+}

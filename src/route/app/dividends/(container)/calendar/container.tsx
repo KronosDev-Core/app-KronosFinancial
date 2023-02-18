@@ -1,24 +1,24 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { FC, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { z } from 'zod';
 
-import { Dayjs } from 'lib/dayjs';
-import { UNIT_DAY } from 'lib/dayjs/constants';
-import dayjs from 'utils/DayJs';
-import { getAllDividends } from 'lib/api/dividend';
-import { sub } from 'utils/Math';
-import Input from 'route/(components)/input';
-import Button from 'route/(components)/button';
-import LeftIcon from 'assets/icons/Left';
-import RightIcon from 'assets/icons/Right';
+import { Dayjs } from '@Lib/dayjs';
+import { UNIT_DAY } from '@Lib/dayjs/constants';
+import DayJs from '@Utils/DayJs';
+import { sub } from '@Utils/Math';
+import Input from '@Components/input';
+import Button from '@Components/button';
+import LeftIcon from '@Assets/icons/Left';
+import RightIcon from '@Assets/icons/Right';
+import { getAllDividends } from '@Lib/api/dividend';
 import CalendarItem from './(components)/CalendarItem';
 
-const CalendarContainer: FC = (): JSX.Element => {
+export default function CalendarContainer() {
   const queryClient = useQueryClient();
 
-  const [month, setMonth] = useState<number>(dayjs().month());
-  const [year, setYear] = useState<number>(dayjs().year());
-  const [date, setDate] = useState<Dayjs>(dayjs().startOf('month'));
+  const [month, setMonth] = useState<number>(DayJs().month());
+  const [year, setYear] = useState<number>(DayJs().year());
+  const [date, setDate] = useState<Dayjs>(DayJs().startOf('month'));
   const [monthError, setMonthError] = useState<string>('');
   const [yearError, setYearError] = useState<string>('');
 
@@ -30,14 +30,14 @@ const CalendarContainer: FC = (): JSX.Element => {
     const typeYear = z.number().min(2000).max(3000);
 
     if (e.target.value === '') {
-      setYear(dayjs().year());
+      setYear(DayJs().year());
       setYearError('');
     } else {
       if (typeYear.safeParse(Number(e.target.value)).success) {
         setYear(Number(e.target.value));
         setYearError('');
       } else {
-        setYear(dayjs().year());
+        setYear(DayJs().year());
         setYearError('Invalid year');
       }
     }
@@ -47,21 +47,21 @@ const CalendarContainer: FC = (): JSX.Element => {
     const typeMonth = z.number().min(1).max(12);
 
     if (e.target.value === '') {
-      setMonth(dayjs().month());
+      setMonth(DayJs().month());
       setMonthError('');
     } else {
       if (typeMonth.safeParse(Number(e.target.value)).success) {
         setMonth(sub(Number(e.target.value), 1));
         setMonthError('');
       } else {
-        setMonth(dayjs().month());
+        setMonth(DayJs().month());
         setMonthError('Invalid month');
       }
     }
   };
 
   useEffect(
-    () => setDate(dayjs().month(month).year(year).startOf('month')),
+    () => setDate(DayJs().month(month).year(year).startOf('month')),
     [month, year],
   );
 
@@ -133,6 +133,4 @@ const CalendarContainer: FC = (): JSX.Element => {
       </div>
     </div>
   );
-};
-
-export default CalendarContainer;
+}
