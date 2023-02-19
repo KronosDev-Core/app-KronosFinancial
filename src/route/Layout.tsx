@@ -11,6 +11,7 @@ import Error from '@Components/error';
 import Dashboard from '@App/dashboard/layout';
 import Dividends from '@App/dividends/layout';
 import Stocks from '@App/stocks/layout';
+import AppLayout from '@App/layout';
 
 export default function Layout() {
   const router = createBrowserRouter([
@@ -21,7 +22,7 @@ export default function Layout() {
       children: [
         {
           path: 'app',
-          element: <Outlet />,
+          element: <AppLayout />,
           children: [
             {
               path: '',
@@ -36,7 +37,7 @@ export default function Layout() {
               element: <Dividends />,
             },
             {
-              path: 'stock',
+              path: 'stocks',
               element: <Stocks />,
               children: [
                 {
@@ -45,9 +46,35 @@ export default function Layout() {
                 },
               ],
             },
+            {
+              path: 'account',
+              element: <Outlet/>,
+              children: [
+                {
+                  path: '',
+                  element: <Navigate to="profile" replace={!0} />,
+                },
+                {
+                  path: 'profile',
+                  element: <></>,
+                },
+                {
+                  path: 'settings',
+                  element: <></>,
+                },
+              ],
+            },
           ],
         },
       ],
+    },
+    {
+      path: 'logout',
+      element: <></>,
+    },
+    {
+      path: 'login',
+      element: <></>,
     },
   ]);
 

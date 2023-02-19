@@ -2,7 +2,8 @@
 
 ### Features
 
-- 
+- Navbar (Navigation)
+- Icons (Home, Logout, User)
 
 ### Performance improvement
 
@@ -12,6 +13,7 @@
 
 - Improve input components (Errors, Icons, Input)
 - Adapt form with new input components
+- Add routes (account, auth)
 
 ### Bugs fixes
 
