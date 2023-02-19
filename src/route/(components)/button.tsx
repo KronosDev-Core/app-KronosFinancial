@@ -14,7 +14,7 @@ export default function Button({
   return (
     <button
       className={
-        'px-4 py-2 font-semibold bg-slate-700 rounded shadow-lg h-fit my-auto ' +
+        'flex justify-center px-4 py-2 font-semibold bg-slate-700 rounded shadow-lg h-fit ' +
         rest.className
       }
       onClick={callback}
@@ -22,4 +22,4 @@ export default function Button({
       {children}
     </button>
   );
-}
+};

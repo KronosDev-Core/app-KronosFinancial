@@ -81,9 +81,7 @@ export default function CalendarContainer() {
             value={month}
             callback={handleMonthChange}
             error={monthError}
-          >
-            <></>
-          </Input>
+          />
           <div className="text-center text-lg">-</div>
           <Input
             type="number"
@@ -91,9 +89,7 @@ export default function CalendarContainer() {
             value={year}
             callback={handleYearChange}
             error={yearError}
-          >
-            <></>
-          </Input>
+          />
         </div>
 
         <div className="inline-flex justify-center gap-x-3">

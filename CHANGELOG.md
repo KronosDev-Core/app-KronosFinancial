@@ -1,4 +1,25 @@
-## [2.0.4]() 02-18-2023
+## [2.0.5]() 02-19-2023
+
+### Features
+
+- 
+
+### Performance improvement
+
+-
+
+### Improvement
+
+- Improve input components (Errors, Icons, Input)
+- Adapt form with new input components
+
+### Bugs fixes
+
+- The icon in Button component moves out of place when the screen size changes
+
+<br/>
+
+## [2.0.4](https://github.com/KronosDev-Core/app-KronosFinancial/commit/76afcaea65b8a7c5dd69fcba71512f0ed2ed8aad) 02-18-2023
 
 ### Features
 

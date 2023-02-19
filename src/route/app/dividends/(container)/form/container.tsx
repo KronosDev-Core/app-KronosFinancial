@@ -24,6 +24,7 @@ const schema = z
     price: z.number().nonnegative(),
   })
   .required();
+type formData = z.infer<typeof schema>;
 
 export default function FormContainer() {
   const [calendarDividend] = useAtom(AppStore.calendar.dividend);
@@ -33,15 +34,12 @@ export default function FormContainer() {
     setValue,
     reset,
     formState: { errors },
+    handleSubmit,
     getValues,
     watch,
-  } = useForm<{
-    company: string;
-    date: string;
-    amount: number;
-    price: number;
-  }>({
+  } = useForm<formData>({
     resolver: zodResolver(schema),
+    reValidateMode: 'onChange',
   });
 
   const { data, isSuccess, isFetching } = useQuery<Dividend>({
@@ -73,12 +71,6 @@ export default function FormContainer() {
     });
 
   const onSubmit = () => {
-    console.log(
-      getValues('price'),
-      typeof getValues('price'),
-      getValues('amount'),
-      typeof getValues('amount'),
-    );
     if (isSuccess && !isFetching)
       createBuyMutation.mutate({
         date: getValues('date'),
@@ -87,7 +79,7 @@ export default function FormContainer() {
         dividendId: data.id,
       });
 
-    resetForm();
+      resetForm();
   };
 
   return (
@@ -124,7 +116,7 @@ export default function FormContainer() {
             <Input
               name="company"
               placeholder="Company"
-              error={errors.company?.message || ''}
+              error={errors.company}
               disabled
               register={register}
             >
@@ -133,7 +125,7 @@ export default function FormContainer() {
             <Input
               name="date"
               placeholder="Date of purchase"
-              error={errors.date?.message || ''}
+              error={errors.date}
               register={register}
             >
               <ShopIcon className="h-6 w-6 fill-slate-200 m-auto" />
@@ -141,7 +133,7 @@ export default function FormContainer() {
             <Input
               name="amount"
               placeholder="Purchase amount"
-              error={errors.amount?.message || ''}
+              error={errors.amount}
               register={register}
               type="number"
             >
@@ -150,7 +142,7 @@ export default function FormContainer() {
             <Input
               name="price"
               placeholder="Price at the time of purchase"
-              error={errors.price?.message || ''}
+              error={errors.price}
               register={register}
               type="number"
             >
@@ -158,7 +150,7 @@ export default function FormContainer() {
             </Input>
 
             <div className="flex w-full h-full justify-end p-2">
-              <Button className="w-fit" callback={onSubmit}>
+              <Button className="w-fit" callback={handleSubmit(onSubmit)}>
                 <span className="text-slate-200">Add</span>
               </Button>
             </div>
