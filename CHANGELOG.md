@@ -6,17 +6,19 @@
 
 ### Performance improvement
 
--
+- Split the header form and the calendar, to save on the number of renders but also to prepare the next version
 
 ### Improvement
 
 - `build` command, delete `dist` folder before rebuild project
 - The date in `Calendar.List` was removed as it was redundant, replace by `Receive dividends` if value is superior to 0
 - Use `Utils.Math` instead math formula
+- The padding of the navigation bar is not aligned with the other containers
+- Set id if i click in Item in Dividends.Calendar.Items
 
 ### Bugs fixes
 
-- 
+- The error message in the `Input` component does not hide the input field.
 
 <br/>
 

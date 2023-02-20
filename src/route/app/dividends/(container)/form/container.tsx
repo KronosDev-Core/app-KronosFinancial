@@ -118,8 +118,8 @@ export default function FormContainer() {
               name="company"
               placeholder="Company"
               error={errors.company}
-              disabled
               register={register}
+              disabled
             >
               <CompanyIcon className="h-5 w-5 fill-slate-200 m-auto" />
             </Input>
