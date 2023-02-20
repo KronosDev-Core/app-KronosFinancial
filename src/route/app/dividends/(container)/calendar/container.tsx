@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { Dayjs } from '@Lib/dayjs';
 import { UNIT_DAY } from '@Lib/dayjs/constants';
 import DayJs from '@Utils/DayJs';
-import { sub } from '@Utils/Math';
+import { add, sub } from '@Utils/Math';
 import Input from '@Components/input';
 import Button from '@Components/button';
 import LeftIcon from '@Assets/icons/Left';
@@ -24,7 +24,7 @@ export default function CalendarContainer() {
 
   var firstDay = date.startOf('month').startOf('week'),
     lastDay = date.endOf('month').endOf('week'),
-    totalDays = lastDay.diff(firstDay, UNIT_DAY, !1) + 1;
+    totalDays = add(lastDay.diff(firstDay, UNIT_DAY, !1), 1);
 
   const handleYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const typeYear = z.number().min(2000).max(3000);

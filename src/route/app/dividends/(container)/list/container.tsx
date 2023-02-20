@@ -9,6 +9,7 @@ import Loader from '@Components/loader';
 import DayJs from '@Utils/DayJs';
 import { Dividend } from '@Types/index';
 import DividendItem from './(components)/DividendItem';
+import { add, sub } from '@Utils/Math';
 
 export default function ListContainer() {
   const { inView } = useInView();
@@ -49,12 +50,14 @@ export default function ListContainer() {
           {isSuccess && !isFetching && data.pages.length > 0
             ? data.pages.map((page) =>
                 page
-                  .sort(
-                    (a, b) =>
-                      a.dividendPerShare -
-                      b.dividendPerShare +
-                      DayJs(a.dateExDividend).unix() -
-                      DayJs(b.dateExDividend).unix(),
+                  .sort((a, b) =>
+                    add(
+                      sub(a.dividendPerShare, b.dividendPerShare),
+                      sub(
+                        DayJs(a.dateExDividend).unix(),
+                        DayJs(b.dateExDividend).unix(),
+                      ),
+                    ),
                   )
                   .map((dividend: Dividend) => {
                     if (calendarDividend === '' && !dividendSet.current) {

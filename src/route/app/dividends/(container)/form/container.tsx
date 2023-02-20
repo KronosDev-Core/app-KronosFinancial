@@ -15,6 +15,7 @@ import CompanyIcon from '@Assets/icons/Company';
 import ShopIcon from '@Assets/icons/Shop';
 import MoneyIcon from '@Assets/icons/Money';
 import Button from '@Components/button';
+import { dividend } from '@Utils/Math';
 
 const schema = z
   .object({
@@ -79,7 +80,7 @@ export default function FormContainer() {
         dividendId: data.id,
       });
 
-      resetForm();
+    resetForm();
   };
 
   return (
@@ -97,10 +98,10 @@ export default function FormContainer() {
               }, you will receive a $${
                 watch('price')
                   ? String(
-                      (
-                        (watch('amount') / watch('price')) *
-                        data.dividendPerShare *
-                        0.7
+                      dividend(
+                        watch('amount'),
+                        watch('price'),
+                        data.dividendPerShare,
                       ).toFixed(2),
                     )
                   : '0'

@@ -2,7 +2,7 @@ import { useAtom } from 'jotai';
 
 import { Dividend } from '@Types/index';
 import AppStore from '@Store/index';
-import DayJs from '@Utils/DayJs';
+import { dividend } from '@Utils/Math';
 
 export default function DividendItem({ item }: { item: Dividend }) {
   const [calendarDividend, setCalendarDividend] = useAtom(
@@ -37,18 +37,26 @@ export default function DividendItem({ item }: { item: Dividend }) {
         </div>
         <div className="w-1 h-[90%] bg-slate-800 rounded-lg col-span-1 mx-1" />
         <div className="col-span-1 grid grid-cols-1 grid-rows-5 justify-center items-center h-full w-full">
-          <p className="text-lg row-span-2 row-start-2 text-center">
-            {DayJs(item.dateExDividend).format('DD/MM/YYYY')}
-          </p>
+          <p className="text-lg row-span-2 row-start-2 text-center">{`${item.dividendPerShare}$`}</p>
           <p className="text-sm italic row-span-1 row-start-4 text-clip text-center">
-            date Ex-Dividend
+            per share
           </p>
         </div>
         <div className="w-1 h-[90%] bg-slate-800 rounded-lg col-span-1 mx-1" />
         <div className="col-span-1 grid grid-cols-1 grid-rows-5 justify-center items-center h-full w-full">
-          <p className="text-lg row-span-2 row-start-2 text-center">{`${item.dividendPerShare}$`}</p>
+          <p className="text-lg row-span-2 row-start-2 text-center">
+            {item.stock.price && item.stock.price > 0
+              ? String(
+                  dividend(
+                    100,
+                    item.stock.price,
+                    item.dividendPerShare,
+                  ).toFixed(2),
+                )
+              : '0'}
+          </p>
           <p className="text-sm italic row-span-1 row-start-4 text-clip text-center">
-            per share
+            dividend (30% tax)
           </p>
         </div>
       </div>
