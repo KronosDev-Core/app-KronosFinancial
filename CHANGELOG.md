@@ -1,4 +1,28 @@
-## [2.0.5]() 02-19-2023
+## [2.0.6]() 02-20-2023
+
+### Features
+
+- 
+
+### Performance improvement
+
+- Split the header form and the calendar, to save on the number of renders but also to prepare the next version
+
+### Improvement
+
+- `build` command, delete `dist` folder before rebuild project
+- The date in `Calendar.List` was removed as it was redundant, replace by `Receive dividends` if value is superior to 0
+- Use `Utils.Math` instead math formula
+- The padding of the navigation bar is not aligned with the other containers
+- Set id if i click in Item in Dividends.Calendar.Items
+
+### Bugs fixes
+
+- The error message in the `Input` component does not hide the input field.
+
+<br/>
+
+## [2.0.5](https://github.com/KronosDev-Core/app-KronosFinancial/commit/596ce7e5852fcde172b7ed0389630d86ca78a69d) 02-19-2023
 
 ### Features
 
@@ -12,7 +36,7 @@
 ### Improvement
 
 - Improve input components (Errors, Icons, Input)
-- Adapt form with new input components
+- Adapt form in `Calendar` with new input components
 - Add routes (account, auth)
 
 ### Bugs fixes
@@ -34,7 +58,7 @@
 ### Improvement
 
 - i18n of code, Texts, ... (dividende => dividend)
-- Undo `remove all alias (@.../\*), is not working in linux environnement`\
+- Undo `remove all alias (@.../\*), is not working in linux environnement`
 - Chores: Update deps
 - Clean code
 

@@ -39,7 +39,7 @@ export default function Input({
             className={
               'placeholder:italic bg-slate-700 rounded-md focus:outline-none px-1 w-full ' +
               rest.className +
-              (error && hover ? ' w-0' : '')
+              (error && hover ? ' !w-0' : '')
             }
             placeholder={`${rest.placeholder || name}...`}
             type="text"
